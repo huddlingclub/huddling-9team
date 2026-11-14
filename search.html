@@ -3,7 +3,7 @@
 <title>상품 검색 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
 <header class="top" id="top"></header>
 <main class="wrap pb0" id="main">
-  <form class="searchbar" id="f"><input id="q" placeholder="찾는 물건을 검색해 보세요" autocomplete="off"><button class="btn sec">검색</button></form>
+  <form class="searchbar" id="f"><div class="field"><input id="q" type="search" placeholder="찾는 물건을 검색해 보세요" autocomplete="off" enterkeyhint="search"><button type="button" class="clear" id="qx" aria-label="검색어 지우기"></button></div><button class="btn sec">검색</button></form>
   <div class="chips" id="sorts"></div>
   <div class="chips" id="sugg"></div>
   <h2 class="sec-title" id="rt" hidden></h2>
@@ -18,13 +18,19 @@
 const SORTS=[['REL','추천순'],['REVIEW','리뷰 많은순'],['LOW_PRICE','낮은 가격'],['HIGH_PRICE','높은 가격']];
 const SORTER={REL:null,REVIEW:(a,b)=>b.reviews-a.reviews,LOW_PRICE:(a,b)=>a.price-b.price,HIGH_PRICE:(a,b)=>b.price-a.price};
 const CACHE_TTL=30*60*1000; // 브라우저(세션) 캐시
-let sort='REL',base=[],shown=[],term='',source='',ctrl=null;
+let sort='REL',base=[],shown=[],term='',source='',ctrl=null,mode='best';
 const q=document.getElementById('q'),grid=document.getElementById('grid'),st=document.getElementById('status'),rt=document.getElementById('rt'),sbtn=document.querySelector('#f button');
 document.getElementById('sorts').innerHTML=SORTS.map(([k,l])=>`<button class="chip ${k===sort?'on':''}" data-k="${k}">${l}</button>`).join('');
 document.getElementById('sugg').innerHTML=['에어팟','맥북','닌텐도 스위치','캠핑의자','레고'].map(s=>`<button class="chip" data-s="${s}">${s}</button>`).join('');
 document.getElementById('sorts').onclick=e=>{const k=e.target.dataset.k;if(!k)return;sort=k;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c.dataset.k===k));if(base.length)render()};
 document.getElementById('sugg').onclick=e=>{if(e.target.dataset.s){q.value=e.target.dataset.s;run()}};
-document.getElementById('f').onsubmit=e=>{e.preventDefault();run()};
+document.getElementById('f').onsubmit=e=>{e.preventDefault();q.blur();run()};
+// 검색어 지우기(x): 입력칸을 눌렀고 글자가 있을 때만 보인다
+const qx=document.getElementById('qx');qx.innerHTML=ICON.close;
+const syncX=()=>qx.classList.toggle('on',q.value.length>0&&document.activeElement===q);
+q.addEventListener('input',syncX);q.addEventListener('focus',syncX);q.addEventListener('blur',()=>setTimeout(syncX,120));
+qx.onmousedown=e=>e.preventDefault(); // 누를 때 입력칸 포커스가 빠지지 않게
+qx.onclick=()=>{q.value='';q.focus();syncX();if(mode==='search'){term='';history.replaceState(null,'','/search.html');best()}};
 
 const ckey=t=>'tj_s:'+t.toLowerCase();
 const readCache=t=>{try{const c=JSON.parse(sessionStorage.getItem(ckey(t)));return c&&Date.now()-c.at<CACHE_TTL?c:null}catch{return null}};
@@ -39,6 +45,7 @@ function done(items,src){
 async function run(){
   const t=q.value.trim().replace(/\s+/g,' ');
   if(!t)return;
+  mode='search';
   history.replaceState(null,'','?q='+encodeURIComponent(t));
   if(t.toLowerCase()===term.toLowerCase()&&base.length){render();return} // 같은 검색어면 다시 부르지 않는다
   term=t;
@@ -57,22 +64,38 @@ async function run(){
     term='';base=[];rt.hidden=true;st.textContent=err.message;grid.innerHTML='';
   }finally{sbtn.disabled=false}
 }
+// 검색 전 기본 상품: 인기 검색어 결과를 합쳐 리뷰 많은 순으로 순위를 매긴다.
+// API 호출을 아끼려고 검색어 2개만 부르고, 실제 결과는 세션 캐시(30분)와 서버 CDN 캐시(1시간)를 탄다.
+const BEST_TERMS=['에어팟','닌텐도 스위치'];
+async function best(){
+  mode='best';rt.hidden=false;rt.textContent='지금 많이 찾는 BEST';st.textContent='';
+  grid.style.display='';grid.innerHTML='<div class="skel"></div>'.repeat(4);
+  const lists=await Promise.all(BEST_TERMS.map(t=>{const c=readCache(t);if(c)return {items:c.items,source:'apify'};
+    return fetch('/api/search?q='+encodeURIComponent(t)).then(r=>r.json()).then(d=>{if(d.source==='apify')writeCache(t,d.items);return d}).catch(()=>({items:[],source:'mock'}))}));
+  if(lists.flatMap(d=>d.items||[]).length<6){ // 결과가 적으면(샘플 모드 등) '베스트' 검색으로 채운다
+    const more=await fetch('/api/search?q='+encodeURIComponent('베스트')).then(r=>r.json()).catch(()=>({items:[]}));lists.push(more)}
+  if(mode!=='best')return; // 그사이 사용자가 검색했으면 덮어쓰지 않는다
+  const seen=new Set();
+  base=lists.flatMap(d=>d.items||[]).filter(p=>!seen.has(p.id)&&seen.add(p.id)).sort((a,b)=>(b.reviews||0)-(a.reviews||0)).slice(0,10);
+  st.textContent=lists.some(d=>d.source==='mock')?'Apify 토큰이 없거나 연결에 실패해 샘플 상품을 보여드려요.':'';
+  render();
+}
 function ctl(p,i){const n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
-  return n?`<div class="in"><button data-i="${i}" data-d="-1" aria-label="하나 빼기">−</button><span>담김 ${n}</span><button data-i="${i}" data-d="1" aria-label="하나 더">+</button></div>`
+  return n?`<div class="in"><button data-i="${i}" data-d="-1" aria-label="하나 빼기">−</button><span aria-label="담은 수량 ${n}개">${n}</span><button data-i="${i}" data-d="1" aria-label="하나 더">+</button></div>`
   :`<button class="add" data-i="${i}" data-d="1">담기</button>`}
 function render(){
   shown=SORTER[sort]?[...base].sort(SORTER[sort]):base;
   if(!shown.length){grid.style.display='block';grid.innerHTML='<div class="empty">찾는 물건이 없어요. 다른 이름으로 검색해 보세요.</div>';return}
   grid.style.display='';
-  grid.innerHTML=shown.map((p,i)=>`<div class="card"><img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+  grid.innerHTML=shown.map((p,i)=>`<div class="card"><div class="thumb">${mode==='best'&&sort==='REL'?`<span class="rank">${i+1}</span>`:''}<img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer"></div>
   <div class="mall">${esc(p.mall)}</div><div class="nm">${esc(p.name)}</div>
   <div class="price">${p.discount>0?`<span class="d">${p.discount}%</span>`:''}${won(p.price)}${p.discount>0?`<s>${won(p.listPrice)}</s>`:''}</div>
-  <div class="meta">${p.rating?`평점 ${p.rating} · 리뷰 ${p.reviews.toLocaleString()}`:'리뷰 없음'}</div>
+  <div class="meta">${p.rating?`평점 ${p.rating}, 리뷰 ${p.reviews.toLocaleString()}`:'리뷰 없음'}</div>
   ${ctl(p,i)}</div>`).join('');
 }
 function bar(){const n=cart.count(),b=document.getElementById('bar');document.getElementById('bn').textContent=`${n}개 · ${won(cart.total())}`;document.getElementById('bgo').textContent=`장바구니 보기 (${n})`;b.classList.toggle('on',n>0);document.getElementById('main').classList.toggle('pb1',n>0)}
 window.onCart=()=>{bar();if(base.length)render()};
 grid.onclick=e=>{const {i,d}=e.target.dataset;if(i==null)return;const p=shown[i],n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
-  if(!n){cart.add(p);toast('장바구니에 담았어요. 아직 돈은 안 나갔어요.')}else cart.set(p.id,n+Number(d))};
-bar();const init=new URLSearchParams(location.search).get('q');if(init){q.value=init;run()}
+  if(!n){cart.add(p);toast('장바구니에 담았어요.')}else cart.set(p.id,n+Number(d))};
+bar();const init=new URLSearchParams(location.search).get('q');if(init){q.value=init;run()}else best();
 </script></body></html>
