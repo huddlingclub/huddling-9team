@@ -1,4 +1,4 @@
-# 텅장구조대
+<img src="assets/logo.png" alt="텅장구조대 BANK RESCUE" width="260">
 
 > 사고 싶은 건 많은데 통장이 텅 비었나요? 네이버쇼핑 실제 상품을 골라 담고, **가상으로 결제**해서 대리만족하세요. 카드값은 0원, 만족감은 진짜입니다.
 
@@ -12,7 +12,7 @@
 
 | 1. 랜딩 | 2. 상품 검색 | 3. 담은 상태 |
 |---|---|---|
-| <img src="docs/screenshots/01-landing-v2.png" width="240"> | <img src="docs/screenshots/02-search-v2.png" width="240"> | <img src="docs/screenshots/03-search-in-cart-v2.png" width="240"> |
+| <img src="docs/screenshots/01-landing-v3.png" width="240"> | <img src="docs/screenshots/02-search-v2.png" width="240"> | <img src="docs/screenshots/03-search-in-cart-v2.png" width="240"> |
 
 | 4. 장바구니 | 5. 가상 결제 | 6. 결제 진행 중 |
 |---|---|---|
@@ -69,11 +69,13 @@ checkout.html         가상 결제
 receipt.html          구조 보고서(영수증)
 assets/app.js         공용 코드 (장바구니, 포맷, 헤더, 토스트)
 assets/style.css      공용 스타일 (DESIGN.md 토큰)
+assets/logo.png       로고 (검정 단색, 투명 배경)
 api/search.js         검색 API (Apify 호출, 캐시, 샘플 대체)
 data/sample.json      토큰이 없을 때 쓰는 샘플 상품
 server.js             로컬 개발 서버
 vercel.json           Vercel 함수 설정 (검색 API 최대 60초)
 docs/screenshots/     README 캡처 이미지
+docs/brand/           로고 원본
 ```
 
 ### 검색 API

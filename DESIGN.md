@@ -143,7 +143,7 @@ button, input { font-family: inherit; }
 ### `/` 랜딩
 
 - 바탕 흰색(`canvas`). 베이지를 쓰지 않는다.
-- 글자 로고 `텅장구조대` (`text-display font-extrabold tracking-[-2px]`), 아래 영문 보조 `RESCUE YOUR ACCOUNT 2026` (`text-caption font-semibold text-muted`)
+- 로고 이미지(`assets/logo.png`)를 맨 위 왼쪽에 둔다. 폭 240px, `h1` 안에 넣고 `alt`는 `텅장구조대 BANK RESCUE`. 로고에 `BANK RESCUE`가 들어 있어 영문 보조 문구는 따로 두지 않는다.
 - 소개 문구 `text-title-lg font-semibold`
 - 안내 세 줄은 위아래 구분선 목록(`border-t border-line py-3 text-body text-ink-2`)
 - 하단 1순위 버튼 하나
@@ -200,3 +200,4 @@ button, input { font-family: inherit; }
 - Pretendard는 `assets/style.css` 첫 줄의 `@import`로 불러온다.
 - 다크 모드는 따로 만들지 않는다. 토큰에 없는 색을 쓰지 않는다는 규칙(0절 7번)을 우선한다.
 - 이모지와 아이콘이 없으므로 파비콘도 글자(`텅`)로 만들었다.
+- 로고는 검정 단색에 투명 배경이다(`assets/logo.png`, 640px 폭, 약 54KB). 검은 배경 위에서는 보이지 않으므로 어두운 바탕(`dark`) 위에 직접 올리지 않는다. 원본은 `docs/brand/logo-original.png`(1536×1024)에 있다. 현재는 랜딩에만 쓰고, 상단바는 글자 `텅장구조대`를 유지한다.

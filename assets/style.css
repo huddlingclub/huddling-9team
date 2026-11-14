@@ -38,9 +38,9 @@ header.top .wrap{display:flex;height:52px;align-items:center;justify-content:spa
 
 /* 랜딩 */
 .landing{display:flex;flex-direction:column;min-height:100vh;min-height:100svh;padding-top:64px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
-.big{margin:0;font-size:48px;font-weight:800;line-height:1;letter-spacing:-2px}
-.eng{margin-top:8px;font-size:12px;font-weight:600;color:var(--muted)}
-.intro{margin:28px 0 24px;font-size:23px;font-weight:600;line-height:1.3}
+.brand{margin:0}
+.brand img{display:block;width:240px;max-width:100%;height:auto}
+.intro{margin:20px 0 24px;font-size:23px;font-weight:600;line-height:1.3}
 .rules{margin:0;padding:0;list-style:none}
 .rules li{padding:12px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
 .rules li:last-child{border-bottom:1px solid var(--line)}
