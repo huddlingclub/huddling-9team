@@ -2,7 +2,8 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>구조 보고서 · 텅장구조대</title><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="/assets/style.css"></head><body class="dark">
 <main class="rcpt-page" id="m"></main>
-<div class="bar"><div class="wrap"><div class="btnrow"><a class="btn sec lg" href="/">처음으로</a><button class="btn" onclick="print()">영수증 저장</button></div></div></div>
+<div class="bar"><div class="wrap"><div class="btnrow"><a class="btn sec lg" href="/">처음으로</a><button class="btn" id="save" type="button">영수증 저장</button></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js" integrity="sha384-UbfRVKN3/elS1r7JcK2FhmPP+KlJ4CvYwbyYD7tH+uTkbT9bNJr9eJeQ0FoFbAgz" crossorigin="anonymous"></script>
 <script src="/assets/app.js"></script>
 <script>
 const id=new URLSearchParams(location.search).get('id');
@@ -85,4 +86,51 @@ else{
     </section>
   </article>`;
 }
+
+// ---- 영수증 저장: 화면 그대로 이미지(PNG)로 만든다. 모바일은 공유 시트(이미지 저장 포함), PC는 파일로 내려받는다.
+const FONT_BASE='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/';
+async function fontCSS(text){ // 이미지 안에서도 Pretendard로 보이게, 영수증에 쓰인 글자의 폰트 조각만 내장한다
+  const cssUrl=FONT_BASE+'pretendardvariable-dynamic-subset.min.css';
+  const css=await (await fetch(cssUrl)).text();
+  const cps=[...new Set([...text].map(c=>c.codePointAt(0)))];
+  const has=(range)=>range.split(',').some(r=>{const [a,b]=r.trim().replace(/^U\+/i,'').split('-');const lo=parseInt(a,16),hi=b?parseInt(b,16):lo;return cps.some(c=>c>=lo&&c<=hi)});
+  const used=(css.match(/@font-face\s*\{[^}]*\}/g)||[]).filter(b=>{const m=b.match(/unicode-range:\s*([^;]+);/);return !m||has(m[1])});
+  const out=await Promise.all(used.map(async b=>{
+    const u=new URL(b.match(/url\(['"]?([^)'"]+)['"]?\)/)[1],cssUrl).href;
+    const bytes=new Uint8Array(await (await fetch(u)).arrayBuffer());let bin='';
+    for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    return b.replace(/url\([^)]*\)/,'url(data:font/woff2;base64,'+btoa(bin)+')');
+  }));
+  return out.join('\n');
+}
+let blobPromise=null;
+function makeBlob(){ // 한 번만 만들어 재사용한다(눌렀을 때 바로 공유할 수 있게 미리 만들어 둔다)
+  if(blobPromise)return blobPromise;
+  blobPromise=(async()=>{
+    const node=document.getElementById('m');
+    await document.fonts.ready;
+    node.querySelector('.receipt').style.animation='none'; // 출력 애니메이션 중간 모습이 찍히지 않게
+    // 질감이 있어 PNG는 3MB가 넘는다. 바탕을 어두운 색으로 채우니 JPEG로 만들어 공유하기 좋은 용량(수백 KB)으로 줄인다
+    const dataUrl=await htmlToImage.toJpeg(node,{quality:.92,pixelRatio:3,backgroundColor:getComputedStyle(document.body).backgroundColor,fontEmbedCSS:await fontCSS(node.textContent),style:{paddingBottom:'40px',margin:'0'}});
+    return (await fetch(dataUrl)).blob();
+  })();
+  blobPromise.catch(()=>{blobPromise=null});
+  return blobPromise;
+}
+if(o)setTimeout(()=>makeBlob().catch(()=>{}),2000); // 출력 애니메이션(1.6초)이 끝난 뒤 미리 만든다
+document.getElementById('save').onclick=async e=>{
+  const btn=e.currentTarget;btn.disabled=true;
+  try{
+    const slow=setTimeout(()=>toast('이미지를 만드는 중이에요'),400);
+    const blob=await makeBlob();clearTimeout(slow);
+    const name='텅장구조대-구조보고서-'+o.id+'.jpg',file=new File([blob],name,{type:'image/jpeg'});
+    if(matchMedia('(pointer:coarse)').matches&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'텅장구조대 구조 보고서',text:'사고 싶은 거 다 사고도 통장을 지켜냈어요'})}catch(err){if(err.name!=='AbortError')throw err}
+    }else{
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('이미지로 저장했어요');
+    }
+  }catch(err){toast('이미지를 만들지 못해 인쇄 창을 열어요');setTimeout(()=>print(),700)}
+  finally{btn.disabled=false}
+};
 </script></body></html>
