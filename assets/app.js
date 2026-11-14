@@ -21,7 +21,7 @@ const cart = {
 function header() {
   const el = document.getElementById('top');
   if (el) {
-    el.innerHTML = `<div class="wrap"><a class="logo" href="/">텅장구조대</a>
+    el.innerHTML = `<div class="wrap"><a class="logo" href="/" aria-label="텅장구조대 홈"><img src="/assets/logo-wordmark.png" width="330" height="72" alt="텅장구조대"></a>
     <a class="cartlink" href="/cart.html">장바구니<span id="badge">${cart.count()}</span></a></div>`;
     const b = document.getElementById('badge');
     if (b && window._lastCount !== undefined && window._lastCount !== cart.count()) { b.classList.add('bump'); setTimeout(() => b.classList.remove('bump'), 300); }

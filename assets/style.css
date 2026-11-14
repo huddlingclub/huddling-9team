@@ -139,3 +139,7 @@ body.dark .bar{border-top-color:var(--line)}
 .chips.scroll{flex-wrap:nowrap;margin:0 -16px 8px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
 .chips.scroll::-webkit-scrollbar{display:none}
 .chips.scroll .chip{flex-shrink:0}
+
+/* 상단바 로고(글자 부분만): 높이 24px */
+.logo{display:flex;align-items:center;height:40px}
+.logo img{display:block;height:24px;width:auto}
