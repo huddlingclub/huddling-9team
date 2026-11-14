@@ -47,12 +47,21 @@ function checkLimits(ip) {
   return null;
 }
 
+// 네이버 상품 이미지는 원본이 수백 KB라 w300 썸네일로 받는다(화면 최대 폭은 약 170px, 2배 화면 대응)
+function thumb(u) {
+  try {
+    const x = new URL(u);
+    if (x.hostname.endsWith('.pstatic.net') && !x.search) x.search = '?type=w300';
+    return x.toString();
+  } catch { return u || ''; }
+}
+
 function normalize(r) {
   const price = r.discountedSalePrice ?? r.salePrice ?? 0;
   return {
     id: String(r.nvMid ?? r.channelProductId ?? r.productPageUrl ?? r.productName),
     name: r.productName || '이름 없는 상품',
-    image: r.imageUrl || '',
+    image: thumb(r.imageUrl),
     price: Math.round(price),
     listPrice: Math.round(r.salePrice ?? price),
     discount: Math.round(r.discountedRatio ?? 0),

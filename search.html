@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>상품 검색 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<title>상품 검색 · 텅장구조대</title><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://shopping-phinf.pstatic.net"><link rel="stylesheet" href="/assets/style.css"></head><body>
 <header class="top" id="top"></header>
 <main class="wrap pb0" id="main">
   <form class="searchbar" id="f"><input id="q" placeholder="찾는 물건을 검색해 보세요" autocomplete="off"><button class="btn sec">검색</button></form>
   <div class="chips" id="sorts"></div>
-  <div class="chips" id="sugg"></div>
+  <div class="chips scroll" id="sugg"></div>
   <h2 class="sec-title" id="rt" hidden></h2>
   <p class="note" id="status"></p>
   <div class="grid" id="grid"></div>
@@ -21,7 +21,7 @@ const CACHE_TTL=30*60*1000; // 브라우저(세션) 캐시
 let sort='REL',base=[],shown=[],term='',source='',ctrl=null;
 const q=document.getElementById('q'),grid=document.getElementById('grid'),st=document.getElementById('status'),rt=document.getElementById('rt'),sbtn=document.querySelector('#f button');
 document.getElementById('sorts').innerHTML=SORTS.map(([k,l])=>`<button class="chip ${k===sort?'on':''}" data-k="${k}">${l}</button>`).join('');
-document.getElementById('sugg').innerHTML=['에어팟','맥북','닌텐도 스위치','캠핑의자','레고'].map(s=>`<button class="chip" data-s="${s}">${s}</button>`).join('');
+document.getElementById('sugg').innerHTML=['에어팟','맥북','닌텐도 스위치','레고','캠핑의자','다이슨 에어랩','여성 향수','원피스','샤넬 가방','스탠리 텀블러'].map(s=>`<button class="chip" data-s="${s}">${s}</button>`).join('');
 document.getElementById('sorts').onclick=e=>{const k=e.target.dataset.k;if(!k)return;sort=k;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c.dataset.k===k));if(base.length)render()};
 document.getElementById('sugg').onclick=e=>{if(e.target.dataset.s){q.value=e.target.dataset.s;run()}};
 document.getElementById('f').onsubmit=e=>{e.preventDefault();run()};
@@ -64,14 +64,16 @@ function render(){
   shown=SORTER[sort]?[...base].sort(SORTER[sort]):base;
   if(!shown.length){grid.style.display='block';grid.innerHTML='<div class="empty">찾는 물건이 없어요. 다른 이름으로 검색해 보세요.</div>';return}
   grid.style.display='';
-  grid.innerHTML=shown.map((p,i)=>`<div class="card"><img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+  grid.innerHTML=shown.map((p,i)=>`<div class="card"><img src="${esc(p.image)}" alt="" width="300" height="300" loading="lazy" decoding="async" referrerpolicy="no-referrer">
   <div class="mall">${esc(p.mall)}</div><div class="nm">${esc(p.name)}</div>
   <div class="price">${p.discount>0?`<span class="d">${p.discount}%</span>`:''}${won(p.price)}${p.discount>0?`<s>${won(p.listPrice)}</s>`:''}</div>
   <div class="meta">${p.rating?`평점 ${p.rating} · 리뷰 ${p.reviews.toLocaleString()}`:'리뷰 없음'}</div>
-  ${ctl(p,i)}</div>`).join('');
+  <div class="ctl" data-i="${i}">${ctl(p,i)}</div></div>`).join('');
 }
 function bar(){const n=cart.count(),b=document.getElementById('bar');document.getElementById('bn').textContent=`${n}개 · ${won(cart.total())}`;document.getElementById('bgo').textContent=`장바구니 보기 (${n})`;b.classList.toggle('on',n>0);document.getElementById('main').classList.toggle('pb1',n>0)}
-window.onCart=()=>{bar();if(base.length)render()};
+// 담기 상태만 갱신한다(그리드를 다시 그리면 이미지가 매번 새로 만들어진다)
+function refreshCtl(){grid.querySelectorAll('.ctl').forEach(el=>{const p=shown[el.dataset.i];if(p)el.innerHTML=ctl(p,el.dataset.i)})}
+window.onCart=()=>{bar();if(shown.length)refreshCtl()};
 grid.onclick=e=>{const {i,d}=e.target.dataset;if(i==null)return;const p=shown[i],n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
   if(!n){cart.add(p);toast('장바구니에 담았어요. 아직 돈은 안 나갔어요.')}else cart.set(p.id,n+Number(d))};
 bar();const init=new URLSearchParams(location.search).get('q');if(init){q.value=init;run()}
