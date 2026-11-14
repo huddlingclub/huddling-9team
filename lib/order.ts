@@ -6,7 +6,9 @@ const STORAGE_KEY = "tj-last-order";
 
 export function createOrder(items: Product[], address: string): Order {
   const now = new Date();
-  const ymd = now.toISOString().slice(0, 10).replace(/-/g, "");
+  // toISOString 은 UTC 라서 한국 시간 오전 0~9시에 전날 날짜가 찍혀요. 로컬 날짜를 써요.
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const ymd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
   const serial = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
   return {
     id: `TJ-${ymd}-${serial}`,
