@@ -1,25 +1,45 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>장바구니 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
-<header class="top" id="top"></header>
-<main class="wrap pb2"><h2 class="page-title">장바구니</h2><div id="list"></div><div id="more"></div></main>
+<header class="top" id="top" data-title="장바구니" data-back="/search.html"></header>
+<main class="wrap pb2">
+  <div id="list"></div><div id="more"></div>
+</main>
 <div class="bar"><div class="wrap"><div class="sum"><span>총 주문 예상 금액</span><b id="tot"></b></div><div id="go"></div></div></div>
 <script src="/assets/app.js"></script>
 <script>
+function line(x){
+  const on=!x.off,dc=x.discount>0&&x.listPrice>x.price;
+  return `<div class="line${on?'':' off'}">
+  <input type="checkbox" class="chk" data-id="${esc(x.id)}" data-a="pick" ${on?'checked':''} aria-label="${esc(x.name)} 선택">
+  <img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i">
+    <div class="mall" style="margin-top:0">${esc(x.mall)}</div><div class="nm" style="min-height:0">${esc(x.name)}</div>
+    <div class="opt">옵션: 기본 | 수량 ${x.qty}개</div>
+    ${dc?`<div class="was">정가 ${won(x.listPrice*x.qty)}</div>`:''}
+    <div class="price">${dc?`<span class="d">${x.discount}%</span>`:''}${won(x.price*x.qty)}</div>
+    <div class="ship">무료배송, 멀티유니버스 직배송</div>
+    <div class="ctl"><div class="stepper"><button data-id="${esc(x.id)}" data-d="-1" aria-label="하나 빼기" ${x.qty<=1?'disabled':''}>−</button><span>${x.qty}</span><button data-id="${esc(x.id)}" data-d="1" aria-label="하나 더">+</button></div>
+    <button class="textbtn" data-id="${esc(x.id)}" data-d="rm">삭제</button></div></div></div>`;
+}
 function draw(){
-  const c=cart.get(),l=document.getElementById('list'),m=document.getElementById('more');
+  const c=cart.get(),pk=cart.picked(),l=document.getElementById('list'),m=document.getElementById('more');
   document.getElementById('tot').textContent=won(cart.total());
   if(!c.length){
     l.innerHTML='<div class="empty">장바구니가 비었어요. 통장처럼요.<br><a class="btn sec" href="/search.html">쇼핑하러 가기</a></div>';
     m.innerHTML='';document.getElementById('go').innerHTML='<button class="btn" disabled>주문하기 (0)</button>';return}
-  l.innerHTML=c.map(x=>`<div class="line"><img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i">
-    <div class="mall" style="margin-top:0">${esc(x.mall)}</div><div class="nm" style="min-height:0">${esc(x.name)}</div>
-    <div class="price">${won(x.price*x.qty)}</div>
-    <div class="ctl"><div class="stepper"><button data-id="${esc(x.id)}" data-d="-1" aria-label="하나 빼기">−</button><span>${x.qty}</span><button data-id="${esc(x.id)}" data-d="1" aria-label="하나 더">+</button></div>
-    <button class="textbtn" data-id="${esc(x.id)}" data-d="rm">삭제</button></div></div></div>`).join('');
-  m.innerHTML=`<p class="note" style="margin:16px 0 8px;text-align:center">내 잔고 12원의 ${Math.round(cart.total()/12).toLocaleString()}배예요. 현실이었다면 큰일 날 뻔했어요.</p><a class="btn sec" style="width:100%" href="/search.html">더 담으러 가기</a>`;
-  document.getElementById('go').innerHTML=`<a class="btn" href="/checkout.html">주문하기 (${cart.count()})</a>`;
+  const all=pk.length===c.length;
+  l.innerHTML=`<div class="selbar"><label><input type="checkbox" class="chk" data-a="all" ${all?'checked':''}>전체 선택 (${pk.length}/${c.length})</label><button class="textbtn" data-a="rmsel" ${pk.length?'':'disabled'}>선택 삭제</button></div>`+c.map(line).join('');
+  const save=cart.listTotal()-cart.total();
+  m.innerHTML=`<div class="summary"><div class="l"><span>상품 금액</span><span>${won(cart.listTotal())}</span></div>${save>0?`<div class="l dc"><span>할인 금액</span><span>-${won(save)}</span></div>`:''}<div class="l"><span>배송비</span><span>0원</span></div><div class="l t"><span>총 주문 예상 금액</span><span>${won(cart.total())}</span></div></div>
+  <a class="btn sec" style="width:100%;margin-top:16px" href="/search.html">더 담으러 가기</a>`;
+  const n=cart.pickedCount();
+  document.getElementById('go').innerHTML=n?`<a class="btn" href="/checkout.html">주문하기 (${n})</a>`:'<button class="btn" disabled>주문하기 (0)</button>';
 }
-document.getElementById('list').onclick=e=>{const {id,d}=e.target.dataset;if(!id)return;const x=cart.get().find(i=>i.id===id);cart.set(id,d==='rm'?0:x.qty+Number(d));draw()};
+document.getElementById('list').onclick=e=>{
+  const t=e.target,{id,d,a}=t.dataset;
+  if(a==='all'){cart.pick(null,t.checked);return draw()}
+  if(a==='rmsel'){cart.removePicked();return draw()}
+  if(a==='pick'){cart.pick(id,t.checked);return draw()}
+  if(!id||!d)return;const x=cart.get().find(i=>i.id===id);cart.set(id,d==='rm'?0:x.qty+Number(d));draw()};
 draw();
 </script></body></html>
