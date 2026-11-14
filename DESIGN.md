@@ -46,7 +46,7 @@ shadow: none
 
 ## 0. 꼭 지킬 것
 
-1. 이모지, 아이콘, 일러스트를 임의로 넣지 않는다. 글자 버튼, 구분선, 회색 이미지 자리로 만든다.
+1. 이모지와 일러스트는 넣지 않는다. 아이콘은 1-4에 정한 두 개(뒤로, 장바구니)만 쓴다. 나머지는 글자 버튼, 구분선, 회색 이미지 자리로 만든다.
 2. 그림자 박스, 한쪽 변 강조선, 그라데이션 배경을 쓰지 않는다.
 3. 1순위 버튼(검정 채움)은 한 화면에 하나만 둔다.
 4. 한 줄에 나란히 놓인 버튼은 위계가 달라도 높이와 글자 크기를 같게 한다. 차이는 채움과 너비 비율(보조 1 : 주요 2)로만 둔다.
@@ -138,6 +138,23 @@ button, input { font-family: inherit; }
 | 토스트 | `fixed inset-x-4 bottom-24 rounded-md bg-[#111] px-4 py-3.5 text-body text-canvas` | 1.4초 뒤 사라짐 |
 | 정보 박스 | `rounded-md border border-line p-4` + 제목 `mb-2.5 text-body font-bold` | 결제 화면 |
 
+### 1-4. 아이콘 (두 개만 쓴다)
+
+선 아이콘, 24px, 선 두께 1.75px, 둥근 끝, 색 `ink`. 누르는 영역은 44px이고 `aria-label`을 단다.
+
+| 이름 | 쓰는 곳 | SVG |
+| --- | --- | --- |
+| 뒤로 | `/cart`, `/checkout` 상단바 왼쪽 | `<path d="M15 5l-7 7 7 7"/>` |
+| 장바구니 | 헤더 오른쪽 | `<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>` |
+
+```tsx
+<button aria-label="뒤로" className="-ml-2.5 flex size-11 items-center justify-center">
+  <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+</button>
+```
+
+장바구니 개수 배지: 아이콘 오른쪽 위, 검정 원(높이 16px, `rounded-full bg-ink px-1 text-micro font-bold text-canvas`), 0이면 숨긴다.
+
 ## 2. 화면별 기준 (docs/SPEC.md 경로 기준)
 
 ### `/` 랜딩
@@ -150,16 +167,23 @@ button, input { font-family: inherit; }
 
 ### `/shop` 상품 리스트, 검색
 
-- 상단바 왼쪽 `텅장구조대`, 오른쪽 글자 버튼 `장바구니 N`
+- 상단바 왼쪽 `텅장구조대`, 오른쪽 장바구니 아이콘과 개수 배지
 - 검색창 → 카테고리 칩 → 섹션 제목(`text-body-lg font-bold`) → 상품 2열 그리드
 - 결과 0개: `찾는 물건이 없어요. 다른 이름으로 검색해 보세요.` (`text-body text-muted`, 가운데)
 - 담기 뒤 토스트: `장바구니에 담았어요. 아직 돈은 안 나갔어요.`
 
 ### `/cart` 장바구니
 
-- 상품 줄: 썸네일 80px, 브랜드, 상품명, 금액, 수량 스테퍼, 글자 버튼 `삭제`, 줄 사이 `border-b border-line`
+- 상단바: 뒤로 아이콘 + 제목 `장바구니`
+- 선택 줄(높이 52px, 아래 1px 검정 선): 체크박스(20px, `accent-color: #000`) + `전체 선택 (선택 수/전체 수)`, 오른쪽 글자 버튼 `선택 삭제`(선택 0개면 비활성)
+- 상품 줄(아래 `border-line`): 체크박스, 썸네일 80px, 브랜드 `brand`, 상품명 13px, `옵션: 기본 | 수량 N개`(`caption`, `muted`), `정가 000원`(`caption`, `muted`, 취소선 없음), 할인율 `accent` + 판매가 14px/700, 배송 문구 11px `muted`
+- 줄 아래: 수량 스테퍼 40px(1에서는 − 비활성), 오른쪽 글자 버튼 `삭제`
+- 선택을 끈 줄은 이미지와 글자를 `opacity: .45`로 흐리게 한다
+- 금액 요약(위 1px 검정 선): 상품 금액, 할인 금액(`-000원`, `accent`), 배송비 0원, 총 주문 예상 금액(16px/700, 위 `border-line`), 안내 `주문해도 실제로 돈은 나가지 않아요.`
+- 함께 담기 좋은 상품: 위 8px `#f4f4f4` 띠로 구분, 제목 16px/700, 보조 `다른 구조대원들도 여기서 꾹 참았어요`, 가로 스크롤 카드 128px(이미지 128px, 브랜드, 상품명 두 줄, 가격, `장바구니 추가` 40px). 이미 담은 상품은 `담겼어요` 비활성
 - 하단 고정: 총 주문 예상 금액(`text-title-md font-bold`) + 1순위 버튼 `주문하기 (N)`
-- 비었을 때: 안내 문구 + 보조 버튼 `쇼핑하러 가기`, 1순위 버튼은 비활성
+- 금액, 주문 수, 결제, 구조 보고서에는 선택한 상품만 들어간다
+- 비었을 때: 안내 문구 + 보조 버튼 `쇼핑하러 가기` + 함께 담기 좋은 상품, 1순위 버튼은 비활성
 
 ### `/checkout` 결제
 
