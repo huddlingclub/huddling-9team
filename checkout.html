@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>결제 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<header class="top" id="top"></header>
+<main class="wrap"><h2>💳 가상 결제</h2><div id="items"></div>
+  <div class="field"><label for="nick">영수증에 찍힐 이름</label><input id="nick" maxlength="20" placeholder="예) 텅장러 김성구"></div>
+  <div class="field"><label>결제 수단 <span class="note">(전부 가상입니다. 카드 번호는 받지 않아요)</span></label>
+    <div class="pay" id="pay"></div></div>
+  <div class="sum" id="sum"></div>
+  <button class="btn" id="go" style="width:100%">결제하기</button>
+</main>
+<div class="overlay" id="ov"><div><div style="font-size:48px">💸</div><h2 id="ovt">결제 진행 중...</h2><p id="ovp">통장은 안전합니다</p><div class="bar"><i id="bar"></i></div></div></div>
+<script src="/assets/app.js"></script>
+<script>
+const c=cart.get(); if(!c.length) location.replace('/cart.html');
+const METHODS=['상상카드','허공페이','무통장 상상입금']; let method=METHODS[0];
+document.getElementById('items').innerHTML=c.map(x=>`<div class="row"><img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i"><div>${esc(x.name)}</div><div class="meta">${won(x.price)} × ${x.qty}</div></div><b>${won(x.price*x.qty)}</b></div>`).join('');
+const pay=document.getElementById('pay');
+const drawPay=()=>pay.innerHTML=METHODS.map(m=>`<button data-m="${m}" class="${m===method?'on':''}">${m}</button>`).join('');
+pay.onclick=e=>{if(e.target.dataset.m){method=e.target.dataset.m;drawPay()}};drawPay();
+document.getElementById('sum').innerHTML=`<div class="l"><span>상품 금액</span><span>${won(cart.total())}</span></div><div class="l"><span>가상 결제</span><span>- ${won(cart.total())}</span></div><div class="l t"><span>실제로 나가는 돈</span><span style="color:var(--ok)">0원</span></div>`;
+document.getElementById('go').innerHTML=`${won(cart.total())} 지르기 <small style="opacity:.8">(실제 0원)</small>`;
+const MSG=['상상카드 승인 요청 중...','통장 잔고 확인 중... (보지 마세요)','카드값 걱정 필터 적용 중...','결제 승인!'];
+document.getElementById('go').onclick=()=>{
+  const nick=document.getElementById('nick').value.trim()||'익명의 텅장러';
+  const order={id:'TJ'+Date.now().toString(36).toUpperCase(),nick,method,at:new Date().toISOString(),items:c,total:cart.total()};
+  const all=load(ORDERS,[]);all.unshift(order);save(ORDERS,all.slice(0,20));
+  const ov=document.getElementById('ov');ov.classList.add('on');
+  requestAnimationFrame(()=>document.getElementById('bar').style.width='100%');
+  let i=0;const t=setInterval(()=>{document.getElementById('ovp').textContent=MSG[Math.min(++i,MSG.length-1)]},700);
+  setTimeout(()=>{clearInterval(t);cart.clear();location.href='/receipt.html?id='+order.id},2500);
+};
+</script></body></html>

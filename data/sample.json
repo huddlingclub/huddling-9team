@@ -1,0 +1,122 @@
+[
+ {
+  "id": "mock-1",
+  "name": "에어팟 프로 2세대 무선 이어폰",
+  "image": "https://picsum.photos/seed/tj1/400/400",
+  "price": 329000,
+  "listPrice": 359000,
+  "discount": 8,
+  "mall": "애플공식",
+  "rating": 4.9,
+  "reviews": 18230,
+  "url": ""
+ },
+ {
+  "id": "mock-2",
+  "name": "무선 이어폰 블루투스 5.3 노이즈캔슬링",
+  "image": "https://picsum.photos/seed/tj2/400/400",
+  "price": 39900,
+  "listPrice": 69000,
+  "discount": 42,
+  "mall": "사운드랩",
+  "rating": 4.6,
+  "reviews": 5210,
+  "url": ""
+ },
+ {
+  "id": "mock-3",
+  "name": "캠핑의자 릴렉스 접이식 체어",
+  "image": "https://picsum.photos/seed/tj3/400/400",
+  "price": 45900,
+  "listPrice": 59000,
+  "discount": 22,
+  "mall": "아웃도어킹",
+  "rating": 4.7,
+  "reviews": 3300,
+  "url": ""
+ },
+ {
+  "id": "mock-4",
+  "name": "맥북 에어 M3 13인치 16GB",
+  "image": "https://picsum.photos/seed/tj4/400/400",
+  "price": 1490000,
+  "listPrice": 1690000,
+  "discount": 12,
+  "mall": "애플공식",
+  "rating": 4.9,
+  "reviews": 2210,
+  "url": ""
+ },
+ {
+  "id": "mock-5",
+  "name": "닌텐도 스위치 OLED 화이트",
+  "image": "https://picsum.photos/seed/tj5/400/400",
+  "price": 419000,
+  "listPrice": 449000,
+  "discount": 7,
+  "mall": "게임천국",
+  "rating": 4.8,
+  "reviews": 9120,
+  "url": ""
+ },
+ {
+  "id": "mock-6",
+  "name": "다이슨 에어랩 멀티 스타일러",
+  "image": "https://picsum.photos/seed/tj6/400/400",
+  "price": 699000,
+  "listPrice": 799000,
+  "discount": 13,
+  "mall": "다이슨공식",
+  "rating": 4.8,
+  "reviews": 4410,
+  "url": ""
+ },
+ {
+  "id": "mock-7",
+  "name": "삼성 갤럭시 S25 울트라 256GB",
+  "image": "https://picsum.photos/seed/tj7/400/400",
+  "price": 1698400,
+  "listPrice": 1698400,
+  "discount": 0,
+  "mall": "삼성전자",
+  "rating": 4.8,
+  "reviews": 1520,
+  "url": ""
+ },
+ {
+  "id": "mock-8",
+  "name": "레고 스타워즈 밀레니엄 팔콘",
+  "image": "https://picsum.photos/seed/tj8/400/400",
+  "price": 189000,
+  "listPrice": 219000,
+  "discount": 14,
+  "mall": "레고코리아",
+  "rating": 4.9,
+  "reviews": 870,
+  "url": ""
+ },
+ {
+  "id": "mock-9",
+  "name": "샤오미 로봇청소기 S10+",
+  "image": "https://picsum.photos/seed/tj9/400/400",
+  "price": 329000,
+  "listPrice": 489000,
+  "discount": 33,
+  "mall": "샤오미스토어",
+  "rating": 4.5,
+  "reviews": 2310,
+  "url": ""
+ },
+ {
+  "id": "mock-10",
+  "name": "무선 이어폰 케이스 실리콘 커버",
+  "image": "https://picsum.photos/seed/tj10/400/400",
+  "price": 3900,
+  "listPrice": 6900,
+  "discount": 43,
+  "mall": "악세사리샵",
+  "rating": 4.4,
+  "reviews": 12000,
+  "url": ""
+ }
+]
