@@ -11,11 +11,13 @@ try { // .env.local 로드 (값은 출력하지 않는다)
 } catch {}
 
 const search = require('./api/search.js');
+const img = require('./api/img.js');
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml' };
 
 http.createServer((req, res) => {
   const p = new URL(req.url, 'http://x').pathname;
   if (p === '/api/search') return search(req, res);
+  if (p === '/api/img') return img(req, res);
   const clean = p === '/' ? '/index.html' : p.replace(/\.\./g, '');
   const file = path.join(__dirname, clean.endsWith('/') ? clean + 'index.html' : clean);
   fs.readFile(file, (err, buf) => {

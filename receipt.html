@@ -12,6 +12,7 @@ const m=document.getElementById('m');
 if(!o){document.body.classList.remove('dark');m.innerHTML='<div class="empty">구조 보고서를 찾을 수 없어요.<br><a class="btn sec" href="/search.html">쇼핑하러 가기</a></div>'}
 else{
   const qty=o.items.reduce((a,b)=>a+b.qty,0);
+  const top=[...o.items].sort((a,b)=>b.price-a.price)[0]; // 오늘의 최대 위기: 개당 가격이 가장 비싼 상품
   // 한국 시간 기준 날짜와 시각, 구조 번호(TJ-날짜-4자리)
   const k=new Date(new Date(o.at).getTime()+9*3600*1000).toISOString();
   const day=k.slice(0,10).replace(/-/g,'.'),hm=k.slice(11,16);
@@ -27,6 +28,15 @@ else{
     <div class="dash"></div>
     <p class="banner">* * * 구조 완료 * * *</p>
     <div class="dash"></div>
+
+    <figure class="peril" id="peril" aria-label="오늘의 최대 위기">
+      <div class="peril-box"><span class="peril-tag">오늘의 최대 위기</span><svg class="peril-dots" id="perilDots" viewBox="0 0 120 120" role="img" aria-label="${esc(top.name)} 하프톤 이미지"><defs><filter id="halftone-rough"><feTurbulence type="fractalNoise" baseFrequency="1.2" seed="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale=".8"/></filter></defs><g id="perilG" filter="url(#halftone-rough)"></g></svg></div>
+      <figcaption>
+        <div class="peril-row"><span class="peril-name">${esc(top.name)}</span><span class="peril-price">₩${top.price.toLocaleString('ko-KR')}</span></div>
+        <p class="peril-sub">구매한 척 ${o.items.length}건 중 1위</p>
+      </figcaption>
+    </figure>
+    <div class="dash" id="perilDash"></div>
 
     <ul class="items">
       ${o.items.map(x=>`<li>
@@ -85,6 +95,64 @@ else{
       </svg>
     </section>
   </article>`;
+  // 가장 비싼 상품 사진을 하프톤(점)으로 바꾼다. 사진이 없거나 못 읽으면 블록을 지운다.
+  /*HALFTONE-START*/
+  async function halftone(url){
+    const img=await new Promise((ok,ng)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ng;i.src='/api/img?u='+encodeURIComponent(url)});
+    const S=96,iw=img.naturalWidth,ih=img.naturalHeight,cv=document.createElement('canvas');cv.width=cv.height=S;
+    const g=cv.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';
+    const read=()=>{const d=g.getImageData(0,0,S,S).data,L=new Float32Array(S*S),Sat=new Float32Array(S*S);
+      for(let i=0;i<S*S;i++){const r=d[i*4],gr=d[i*4+1],b=d[i*4+2];L[i]=(.299*r+.587*gr+.114*b)/255;Sat[i]=(Math.max(r,gr,b)-Math.min(r,gr,b))/255}return {L,Sat}};
+    const N4=[[1,0],[-1,0],[0,1],[0,-1]];
+    const bgOf=({L,Sat})=>{ // 가장자리의 흰 배경을 따라 번지게 칠해, 배경과 상품을 가른다(상품 안의 흰 부분은 상품으로 남는다)
+      const bg=new Uint8Array(S*S),st=[],white=i=>L[i]>.9&&Sat[i]<.14;
+      for(let k=0;k<S;k++)for(const i of [k,(S-1)*S+k,k*S,k*S+S-1])if(!bg[i]&&white(i)){bg[i]=1;st.push(i)}
+      while(st.length){const i=st.pop(),x=i%S,y=(i/S)|0;for(const [dx,dy] of N4){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=S||ny>=S)continue;const j=ny*S+nx;if(!bg[j]&&white(j)){bg[j]=1;st.push(j)}}}
+      return bg};
+    // 1차: 상품이 있는 영역을 찾는다
+    g.fillStyle='#fff';g.fillRect(0,0,S,S);
+    const s1=Math.min(S/iw,S/ih),ox=(S-iw*s1)/2,oy=(S-ih*s1)/2;
+    g.drawImage(img,ox,oy,iw*s1,ih*s1);
+    let px=read(),bg=bgOf(px),x0=S,y0=S,x1=-1,y1=-1,n=0;
+    for(let i=0;i<S*S;i++)if(!bg[i]){n++;const x=i%S,y=(i/S)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    const hasBg=n>S*S*.02&&n<S*S*.85; // 흰 배경이 있는 사진인가(없으면 사진 전체를 그대로 쓴다)
+    if(hasBg){ // 2차: 상품만 잘라 상자를 꽉 채운다
+      const sx=Math.max(0,(x0-ox)/s1),sy=Math.max(0,(y0-oy)/s1),sw=Math.min(iw-sx,(x1-x0+1)/s1),sh=Math.min(ih-sy,(y1-y0+1)/s1);
+      const k=Math.min(S*.9/sw,S*.9/sh),dw=sw*k,dh=sh*k;
+      g.fillStyle='#fff';g.fillRect(0,0,S,S);g.drawImage(img,sx,sy,sw,sh,(S-dw)/2,(S-dh)/2,dw,dh);
+      px=read();bg=bgOf(px);
+    }
+    const L=px.L,vals=[];
+    for(let i=0;i<S*S;i++)if(!hasBg||!bg[i])vals.push(L[i]);
+    vals.sort((a,b)=>a-b);
+    const lo=vals[Math.floor(vals.length*.03)],hi=vals[Math.floor(vals.length*.97)],span=Math.max(.15,hi-lo);
+    const tone=new Float32Array(S*S);for(let i=0;i<S*S;i++)tone[i]=Math.min(1,Math.max(0,(hi-L[i])/span)); // 상품 안에서 대비를 늘린다
+    const blur=new Float32Array(S*S);
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){let a=0,c=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=S||ny>=S)continue;a+=tone[ny*S+nx];c++}blur[y*S+x]=a/c}
+    const detail=new Float32Array(S*S);for(let i=0;i<S*S;i++)detail[i]=Math.min(1,Math.max(0,tone[i]+1.1*(tone[i]-blur[i]))); // 세부(화면과 몸체의 경계)를 살린다
+    const edge=new Uint8Array(S*S); // 상품의 윤곽
+    if(hasBg)for(let y=0;y<S;y++)for(let x=0;x<S;x++){const i=y*S+x;if(bg[i])continue;for(const [dx,dy] of N4){const nx=x+dx*2,ny=y+dy*2;if(nx<0||ny<0||nx>=S||ny>=S||bg[ny*S+nx]){edge[i]=1;break}}}
+    // 상품 안에서 밝기 순위(0 밝음 ~ 1 어두움)로 고르게 펼친다: 어두운 사진도 검은 덩어리가 되지 않는다
+    const idx=[];for(let i=0;i<S*S;i++)if(!hasBg||!bg[i])idx.push(i);
+    idx.sort((a,b)=>detail[a]-detail[b]);
+    const rank=new Float32Array(S*S);idx.forEach((i,k)=>{rank[i]=idx.length>1?k/(idx.length-1):0});
+    const step=3.2;let dots='';
+    for(let y=step/2;y<120;y+=step)for(let x=step/2+((y/step)%2)*step/2;x<120;x+=step){
+      const i=Math.min(S-1,Math.floor(y/120*S))*S+Math.min(S-1,Math.floor(x/120*S));
+      let d;
+      if(hasBg&&bg[i])d=.05; // 배경: 아주 작은 점
+      else{d=hasBg?.16+.84*Math.pow(rank[i],1.15):.05+.95*rank[i];if(edge[i])d=Math.min(1,d+.22)} // 상품: 최소 밀도를 주고 윤곽은 조금 더 촘촘히
+      const r=Math.sqrt(d)*step*.56; // 점이 서로 닿는 건 가장 어두운 부분뿐
+      if(r>.28)dots+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(2)+'"/>';
+    }
+    return dots;
+  }
+  /*HALFTONE-END*/
+  window.perilReady=(async()=>{
+    const drop=()=>{document.getElementById('peril')?.remove();document.getElementById('perilDash')?.remove()};
+    if(!top||!top.image)return drop();
+    try{document.getElementById('perilG').innerHTML=await halftone(top.image)}catch(e){drop()}
+  })();
 }
 
 // ---- 영수증 저장: 화면 그대로 이미지(PNG)로 만든다. 모바일은 공유 시트(이미지 저장 포함), PC는 파일로 내려받는다.
@@ -109,6 +177,7 @@ function makeBlob(){ // 한 번만 만들어 재사용한다(눌렀을 때 바�
   blobPromise=(async()=>{
     const node=document.getElementById('m');
     await document.fonts.ready;
+    await (window.perilReady||Promise.resolve());
     node.querySelector('.receipt').style.animation='none'; // 출력 애니메이션 중간 모습이 찍히지 않게
     // 질감이 있어 PNG는 3MB가 넘는다. 바탕을 어두운 색으로 채우니 JPEG로 만들어 공유하기 좋은 용량(수백 KB)으로 줄인다
     const dataUrl=await htmlToImage.toJpeg(node,{quality:.92,pixelRatio:3,backgroundColor:getComputedStyle(document.body).backgroundColor,fontEmbedCSS:await fontCSS(node.textContent),style:{paddingBottom:'40px',margin:'0'}});
