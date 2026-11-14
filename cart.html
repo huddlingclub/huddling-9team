@@ -11,7 +11,7 @@
 function line(x){
   const on=!x.off,dc=x.discount>0&&x.listPrice>x.price;
   return `<div class="line${on?'':' off'}">
-  <input type="checkbox" class="chk" data-id="${esc(x.id)}" data-a="pick" ${on?'checked':''} aria-label="${esc(x.name)} 선택">
+  <label class="hit"><input type="checkbox" class="chk" data-id="${esc(x.id)}" data-a="pick" ${on?'checked':''} aria-label="${esc(x.name)} 선택"></label>
   <img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i">
     <div class="mall" style="margin-top:0">${esc(x.mall)}</div><div class="nm" style="min-height:0">${esc(x.name)}</div>
     <div class="opt">옵션: 기본 | 수량 ${x.qty}개</div>

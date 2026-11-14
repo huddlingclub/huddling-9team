@@ -51,8 +51,9 @@ shadow: none
 3. 1순위 버튼(검정 채움)은 한 화면에 하나만 둔다.
 4. 한 줄에 나란히 놓인 버튼은 위계가 달라도 높이와 글자 크기를 같게 한다. 차이는 채움과 너비 비율(보조 1 : 주요 2)로만 둔다.
 5. 누르는 곳은 높이 40px 이상, 주요 버튼은 44px 이상이다.
-6. 할인율 `#ff4800`은 글자색으로만 쓴다. 채움 배경으로 쓰지 않는다.
+6. 할인율 `#ff4800`은 글자색으로만 쓴다. 채움 배경으로 쓰지 않는다. 글자색 사용처는 할인율, 결제 합계 금액, 하단 결제 버튼 글자, 영수증 `지켜낸 내 돈`이다. 12px 이하 작은 글자에는 쓰지 않는다(검정·흰 바탕이 아니면 대비가 모자란다).
 7. 아래 토큰 밖의 색과 글자 크기는 쓰지 않는다.
+8. 검색 입력창에는 눈에 보이는 라벨이 없으므로 `aria-label="검색어"`를 둔다.
 
 ## 1. 바로 붙여 쓰는 코드
 
@@ -125,7 +126,7 @@ button, input { font-family: inherit; }
 | 1순위 버튼 | `h-[52px] w-full rounded-md bg-ink text-body-lg font-bold text-canvas disabled:bg-[rgba(93,93,93,0.4)]` | 높이 52px, 16px/700 |
 | 보조 버튼 | `h-11 rounded-md border border-line bg-canvas px-4 text-body font-bold active:bg-pressed active:text-ink-3` | 높이 44px, 14px/700 |
 | 카드 안 담기 버튼 | `h-10 w-full rounded-md border border-line bg-canvas text-label font-bold` | 높이 40px, 13px/700 |
-| 칩 | `h-9 rounded-chip bg-chip px-2.5 text-label text-ink-3` / 선택: `bg-ink text-canvas` | 높이 36px, 13px |
+| 칩 | `h-10 rounded-chip bg-chip px-2.5 text-label text-ink-3` / 선택: `bg-ink text-canvas` | 높이 40px, 13px |
 | 검색창 | `flex h-11 items-center rounded-md border-[1.5px] border-ink px-3 text-body-lg` | 높이 44px, 16px |
 | 상단바 | `flex h-[52px] items-center justify-between border-b border-line px-4` + 제목 `text-title-sm font-bold` | 높이 52px |
 | 상품 그리드 | `grid grid-cols-2 gap-x-2 gap-y-5` | 2열, 8px / 20px |
@@ -146,7 +147,7 @@ button, input { font-family: inherit; }
 - 위에서부터: 로고 이미지(`assets/logo.png`, 폭 240px, `h1` 안, `alt`는 `텅장구조대 BANK RESCUE`) → 영문 보조 `RESCUE YOUR ACCOUNT 2026`(`text-caption font-semibold text-muted`) → 소개 문구(`text-title-lg font-semibold`) → 검색창 + 보조 버튼 `검색` → 추천 칩(에어팟, 맥북, 닌텐도 스위치, 캠핑의자, 레고) → 맨 아래 가운데 `text-caption` 안내 두 줄
 - 검색창은 검색 화면의 `.searchbar`와 같은 규격이고 placeholder는 `사고 싶은 물건을 검색해 보세요`다. 검색하면 `/search.html?q=검색어`로 가고, 칩도 같은 방식이다. 빈 검색어는 이동하지 않고 검색창에 포커스만 준다.
 - 이 화면에는 1순위(검정 채움) 버튼을 두지 않는다. 검색은 보조 버튼이다.
-- 칩을 `<a>`로 만들 때는 `inline-flex; align-items:center`로 높이 36px을 지킨다.
+- 칩을 `<a>`로 만들 때는 `inline-flex; align-items:center`로 높이 40px을 지킨다.
 
 **스플래시** (랜딩을 열 때마다 항상 보인다. 앱 실행, 새로고침, 상단 로고, 영수증의 `처음으로` 모두)
 
@@ -167,7 +168,8 @@ button, input { font-family: inherit; }
 
 ### `/cart` 장바구니
 
-- 상품 줄: 썸네일 80px, 브랜드, 상품명, 금액, 수량 스테퍼, 글자 버튼 `삭제`, 줄 사이 `border-b border-line`
+- 맨 위 `전체 선택 (선택 수/전체 수)` 줄: 체크박스 + 글자 버튼 `선택 삭제`, 아래 `border-ink` 선
+- 상품 줄: 선택 체크박스(그림 20px, 누르는 영역 40x40 `label.hit`), 썸네일 80px, 브랜드, 상품명, 금액, 수량 스테퍼, 글자 버튼 `삭제`(높이 40px), 줄 사이 `border-b border-line`. 선택을 끈 줄은 흐리게 두고 주문 금액에서 뺀다
 - 하단 고정: 총 주문 예상 금액(`text-title-md font-bold`) + 1순위 버튼 `주문하기 (N)`
 - 비었을 때: 안내 문구 + 보조 버튼 `쇼핑하러 가기`, 1순위 버튼은 비활성
 
@@ -175,8 +177,8 @@ button, input { font-family: inherit; }
 
 - 정보 박스 순서: 배송지 → 주문 상품 → 결제 수단 → 금액 요약
 - 결제 수단은 같은 높이(44px) 버튼 세 개를 나란히, 선택은 `border-ink font-bold`
-- 안내 `결제하기를 눌러도 실제로 돈이 나가지 않아요.` (`text-caption text-muted`)
-- 하단 1순위 버튼 `결제하기`
+- 안내 `결제하기를 눌러도 실제로 돈이 나가지 않아요. 연출용 가상 결제예요.` (`text-caption text-muted`, 금액 요약 아래 가운데)
+- 하단 1순위 버튼 `N원 가상 결제하기`(검정 바탕, 글자 `accent`). 진행 화면 문구도 모두 「가상」임을 밝힌다(`가상 결제 진행 중`, `가상 결제가 승인되었어요`)
 
 ### `/done` 구조 보고서
 

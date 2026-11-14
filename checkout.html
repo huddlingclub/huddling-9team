@@ -7,9 +7,10 @@
   <section class="box"><h3>주문 상품</h3><div id="items"></div></section>
   <section class="box"><h3>결제 수단</h3><div class="pay" id="pay"></div></section>
   <section class="paysum" id="sum" aria-label="결제 금액"></section>
+  <p class="note" style="margin:12px 0 0;text-align:center">결제하기를 눌러도 실제로 돈이 나가지 않아요.<br>연출용 가상 결제예요.</p>
 </main>
-<div class="bar paybar"><button class="paynow" id="go">결제하기</button></div>
-<div class="overlay" id="ov"><div><h2>결제 진행 중</h2><p id="ovp">결제를 진행하고 있어요. 화면을 닫지 마세요.</p><div class="track"><i id="bar"></i></div></div></div>
+<div class="bar paybar"><button class="paynow" id="go">가상 결제하기</button></div>
+<div class="overlay" id="ov"><div><h2>가상 결제 진행 중</h2><p id="ovp">가상으로 결제하고 있어요. 실제 결제는 일어나지 않아요.</p><div class="track"><i id="bar"></i></div></div></div>
 <script src="/assets/app.js"></script>
 <script>
 const c=cart.picked(); if(!c.length) location.replace('/cart.html');
@@ -20,8 +21,8 @@ const drawPay=()=>pay.innerHTML=METHODS.map(m=>`<button data-m="${m}" class="${m
 pay.onclick=e=>{if(e.target.dataset.m){method=e.target.dataset.m;drawPay()}};drawPay();
 const LIST=c.reduce((a,x)=>a+(x.listPrice||x.price)*x.qty,0),TOT=cart.total(),DC=LIST-TOT;
 document.getElementById('sum').innerHTML=`<div class="l"><span>상품 금액</span><span>${won(LIST)}</span></div>${DC>0?`<div class="l dc"><span>최대 할인 금액 <em class="tag">자동 적용</em></span><span>-${won(DC)}</span></div>`:''}<div class="l"><span>배송비</span><span>무료</span></div><div class="l t"><span>총 결제 금액</span><b>${won(TOT)}</b></div>`;
-document.getElementById('go').textContent=`${won(TOT)} 결제하기`;
-const MSG=['결제를 진행하고 있어요. 화면을 닫지 마세요.','카드사에 승인을 요청하고 있어요','결제 정보를 확인하고 있어요','결제가 승인되었어요'];
+document.getElementById('go').textContent=`${won(TOT)} 가상 결제하기`;
+const MSG=['가상으로 결제하고 있어요. 실제 결제는 일어나지 않아요.','상상 속 카드사에 승인을 요청하고 있어요','가상 결제 정보를 확인하고 있어요','가상 결제가 승인되었어요'];
 document.getElementById('go').onclick=()=>{
   const nick=document.getElementById('nick').value.trim()||'익명의 텅장러';
   const order={id:'TJ'+Date.now().toString(36).toUpperCase(),nick,method,at:new Date().toISOString(),items:c,total:cart.total()};
