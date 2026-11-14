@@ -1,14 +1,19 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>텅장구조대</title><meta name="description" content="사고 싶은 건 많은데 통장이 텅 비었다면. 가상으로 결제하고 대리만족하세요.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="텅장구조대"><meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="텅장구조대 BANK RESCUE"><meta property="og:description" content="사고 싶은 건 많은데 통장이 텅 비었다면, 가상으로 질러 보세요. 실제로 돈은 한 푼도 나가지 않아요.">
+<meta property="og:url" content="https://tungjang-119.vercel.app/">
+<meta property="og:image" content="https://tungjang-119.vercel.app/assets/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="텅장구조대 BANK RESCUE 로고">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="텅장구조대 BANK RESCUE"><meta name="twitter:description" content="사고 싶은 건 많은데 통장이 텅 비었다면, 가상으로 질러 보세요."><meta name="twitter:image" content="https://tungjang-119.vercel.app/assets/og.jpg">
 <!-- 첫 페인트에서 랜딩이 번쩍 보이지 않게 스플래시 클래스를 먼저 붙인다 -->
 <script>document.documentElement.classList.add('splash')</script>
-<link rel="preload" as="image" href="/assets/splash/1.jpg"><link rel="preload" as="image" href="/assets/splash/2.jpg"><link rel="preload" as="image" href="/assets/splash/3.jpg">
+<link rel="preload" as="image" href="/assets/splash/1.jpg"><link rel="preload" as="image" href="/assets/splash/3.jpg"><link rel="preload" as="image" href="/assets/splash/2.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="/assets/style.css"></head><body>
 <div class="sp-photos" id="spPhotos" aria-hidden="true">
-  <div class="sp-slide" style="--src:url(/assets/splash/1.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/1.jpg" alt=""></div>
-  <div class="sp-slide" style="--src:url(/assets/splash/2.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/2.jpg" alt=""></div>
-  <div class="sp-slide" style="--src:url(/assets/splash/3.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/3.jpg" alt=""></div>
+  <div class="sp-slide" style="--src:url(/assets/splash/1.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/1.jpg" alt=""><div class="sp-cap"><p class="q">돈이 부족하신가요?</p><p class="a"><span class="t" data-t="네...">네...</span></p></div></div>
+  <div class="sp-slide" style="--src:url(/assets/splash/3.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/3.jpg" alt=""><div class="sp-cap"><p class="q">그래도 갖고 싶으신가요?</p><p class="a"><span class="t" data-t="네!!">네!!</span></p></div></div>
+  <div class="sp-slide" style="--src:url(/assets/splash/2.jpg)"><i class="bg"></i><img class="fg" src="/assets/splash/2.jpg" alt=""><div class="sp-cap"><p class="q">그럼, 가상으로 질러 볼까요?</p><p class="a"><span class="t" data-t="지르자!">지르자!</span></p></div></div>
 </div>
 <main class="wrap landing" id="landing">
   <h1 class="brand" id="brand"><img src="/assets/logo.png" width="640" height="437" alt="텅장구조대 BANK RESCUE"></h1>
@@ -40,7 +45,7 @@ f.onsubmit=e=>{const v=q.value.trim().replace(/\s+/g,' ');if(!v){e.preventDefaul
   const root=document.documentElement;
   if(!root.classList.contains('splash'))return;
   const h=document.getElementById('brand'),layer=document.getElementById('spPhotos'),slides=[...layer.querySelectorAll('.sp-slide')];
-  const T={photo:400,logo:1900,end:1500}; // 사진 한 장, 로고 화면, 전환 시작부터 종료까지(ms)
+  const T={photo:2400,logo:2000,end:1500}; // 사진 한 장(질문을 읽고 -> 답), 로고 화면, 전환 시작부터 종료까지(ms)
   let phase='boot',timers=[];
   const later=(fn,ms)=>{timers.push(setTimeout(fn,ms))};
   const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
@@ -60,8 +65,15 @@ f.onsubmit=e=>{const v=q.value.trim().replace(/\s+/g,' ');if(!v){e.preventDefaul
     later(end,T.end);
   }
   function logo(){phase='logo';later(go,T.logo)} // 1: 로고 화면
-  function showPhoto(k){slides[k].classList.add('on');if(k>0)slides[k].classList.add('in')}
-  function intro(){ // 0: 사진 3장을 한 장에 0.4초씩 넘긴다(총 1.2초)
+  function showPhoto(k){slides[k].classList.add('on');if(k>0)slides[k].classList.add('sp-in')}
+  // 집중선: 사진 뒤에서 방사형으로 퍼지는 얇은 삼각형들(그라데이션 아님)
+  slides.forEach(sl=>{
+    let d='';for(let a=0;a<360;a+=10){const r=Math.PI/180,x1=50+90*Math.cos((a-1.1)*r),y1=50+90*Math.sin((a-1.1)*r),x2=50+90*Math.cos((a+1.1)*r),y2=50+90*Math.sin((a+1.1)*r);d+='M50 50L'+x1.toFixed(1)+' '+y1.toFixed(1)+'L'+x2.toFixed(1)+' '+y2.toFixed(1)+'Z'}
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('class','rays');svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+    svg.innerHTML='<path d="'+d+'"/>';sl.querySelector('.bg').after(svg);
+  });
+  function intro(){ // 0: 사진 3장에 질문과 답을 얹어 한 장에 2.4초씩 보여 준다(총 7.2초)
     phase='intro';let k=0;showPhoto(0);
     const step=()=>{k++;if(k<slides.length){showPhoto(k);later(step,T.photo)}else{removePhotos();logo()}};
     later(step,T.photo);
