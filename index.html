@@ -45,7 +45,7 @@ f.onsubmit=e=>{const v=q.value.trim().replace(/\s+/g,' ');if(!v){e.preventDefaul
   const root=document.documentElement;
   if(!root.classList.contains('splash'))return;
   const h=document.getElementById('brand'),layer=document.getElementById('spPhotos'),slides=[...layer.querySelectorAll('.sp-slide')];
-  const T={photo:2400,logo:2000,end:1500}; // 사진 한 장(질문을 읽고 -> 답), 로고 화면, 전환 시작부터 종료까지(ms)
+  const T={photo:2100,logo:1700,end:1500}; // 사진 한 장(질문을 읽고 -> 답), 로고 화면, 전환 시작부터 종료까지(ms)
   let phase='boot',timers=[];
   const later=(fn,ms)=>{timers.push(setTimeout(fn,ms))};
   const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
@@ -73,7 +73,7 @@ f.onsubmit=e=>{const v=q.value.trim().replace(/\s+/g,' ');if(!v){e.preventDefaul
     svg.setAttribute('class','rays');svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('preserveAspectRatio','xMidYMid slice');
     svg.innerHTML='<path d="'+d+'"/>';sl.querySelector('.bg').after(svg);
   });
-  function intro(){ // 0: 사진 3장에 질문과 답을 얹어 한 장에 2.4초씩 보여 준다(총 7.2초)
+  function intro(){ // 0: 사진 3장에 질문과 답을 얹어 한 장에 2.1초씩 보여 준다(총 6.3초)
     phase='intro';let k=0;showPhoto(0);
     const step=()=>{k++;if(k<slides.length){showPhoto(k);later(step,T.photo)}else{removePhotos();logo()}};
     later(step,T.photo);
