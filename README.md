@@ -75,6 +75,7 @@ assets/splash/        스플래시 사진 3장
 assets/og.jpg         링크 공유 미리보기(OG) 이미지
 api/search.js         검색 API (Apify 호출, 캐시, 샘플 대체)
 api/img.js            상품 사진 중계(영수증 하프톤 변환용, *.pstatic.net 이미지로만 제한)
+tools/prefetch.js      추천 칩 검색어 결과를 미리 받아 data/presets.json에 저장(Apify 유료 호출)
 data/sample.json      토큰이 없을 때 쓰는 샘플 상품
 server.js             로컬 개발 서버
 vercel.json           Vercel 함수 설정 (검색 API 최대 60초)
@@ -110,7 +111,12 @@ Apify는 호출할 때마다 돈이 들어서 아래 순서로 막습니다.
 | 서버 캐시 | 검색어의 공백과 대소문자를 정리해 같은 키로 보고, 60분 동안 최대 300개를 메모리에 둡니다. |
 | 동시 요청 합치기 | 같은 검색어가 동시에 오면 Apify는 한 번만 부릅니다. |
 | 실패 기억 | 실패한 검색어는 30초 동안 다시 부르지 않고 샘플로 답합니다. |
-| 호출 한도 | IP당 10분에 8번, 하루 전체 300번을 넘으면 429로 거절합니다. 캐시에 있는 검색어는 한도에 세지 않습니다. |
+| 미리 받아 둔 결과 | 추천 칩 10개 검색어는 `data/presets.json`에 저장해 두고 Apify를 부르지 않습니다(토큰이 없거나 한도를 넘어도 답합니다, `X-Cache: PRESET`). |
+| 호출 한도 | IP당 10분에 8번, 하루 전체 200번을 넘으면 429로 거절합니다. 캐시와 미리 받아 둔 검색어는 한도에 세지 않습니다. |
+
+검색 1회에 가져오는 상품 수의 기본값은 10개입니다(미리 받아 둔 결과는 20개).
+
+미리 받아 둔 결과는 `node tools/prefetch.js`로 만듭니다(검색어 1개당 Apify 약 $0.018, 저장본이 있는 검색어는 건너뜀. `--force`는 전부 다시 받음). 칩 검색어를 바꾸면 `tools/prefetch.js`의 `KEYWORDS`와 `search.html`의 칩 목록을 같이 고치세요. 가격은 받은 시점 기준입니다.
 
 한도와 캐시 시간은 환경 변수로 바꿉니다(`.env.example` 참고): `SEARCH_CACHE_MIN`, `SEARCH_LIMIT`, `SEARCH_IP_MAX`, `APIFY_DAILY_LIMIT`.
 

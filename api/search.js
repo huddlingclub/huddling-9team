@@ -2,16 +2,17 @@
 // Apify 호출은 유료(검색 1회 약 $0.018)라서 아래 순서로 막는다.
 //   1) 서버 캐시(검색어 정규화, LRU, 기본 60분)  2) 같은 검색어 동시 요청 합치기
 //   3) 실패한 검색어는 30초간 재호출 안 함       4) IP별 · 하루 호출 한도
-//   5) Vercel CDN 캐시 헤더(s-maxage)            ※ 서버리스는 인스턴스마다 메모리가 따로라 1)~4)는 최선 노력이다
+//   5) Vercel CDN 캐시 헤더(s-maxage)            6) 추천 칩 검색어는 미리 받아 둔 data/presets.json으로 답한다(호출 0)
+//   ※ 서버리스는 인스턴스마다 메모리가 따로라 1)~4)는 최선 노력이다
 const fs = require('fs');
 const path = require('path');
 
 const ACTOR = 'g0DIy7jhI0dLfdKoo'; // topapi/naver-shopping-scraper
 const TTL = (Number(process.env.SEARCH_CACHE_MIN) || 60) * 60 * 1000;
-const LIMIT = Math.min(40, Math.max(1, Number(process.env.SEARCH_LIMIT) || 20)); // 검색 1회당 상품 수
+const LIMIT = Math.min(40, Math.max(1, Number(process.env.SEARCH_LIMIT) || 10)); // 검색 1회당 상품 수
 const IP_MAX = Number(process.env.SEARCH_IP_MAX) || 8; // IP당 10분에 새로 부르는 횟수
 const IP_WINDOW = 10 * 60 * 1000;
-const DAY_MAX = Number(process.env.APIFY_DAILY_LIMIT) || 300; // 하루 전체 호출 상한
+const DAY_MAX = Number(process.env.APIFY_DAILY_LIMIT) || 200; // 하루 전체 호출 상한
 const FAIL_TTL = 30 * 1000;
 const CACHE_MAX = 300;
 
@@ -20,6 +21,10 @@ const inflight = new Map(); // key -> Promise
 const failed = new Map(); // key -> 재시도 가능 시각
 const ipHits = new Map(); // ip -> [시각]
 const day = { d: '', n: 0 };
+
+// 추천 칩 검색어를 미리 받아 둔 결과(tools/prefetch.js가 만든다). 없으면 빈 객체.
+let presets = {};
+try { presets = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'presets.json'), 'utf8')).items || {}; } catch {}
 
 const norm = (q) => q.trim().replace(/\s+/g, ' ').toLowerCase();
 
@@ -94,6 +99,7 @@ async function fetchApify(q, token) {
 // 반환: { source, items, cache, note? } 또는 { limited: '메시지' }
 async function search(q, ip) {
   const key = norm(q);
+  if (presets[key]) return { source: 'apify', items: presets[key], cache: 'PRESET' }; // 토큰·한도와 상관없이 답한다
   const token = process.env.APIFY_TOKEN;
   if (!token) return { source: 'mock', items: mock(key), cache: 'MOCK' };
 
@@ -134,3 +140,7 @@ module.exports = async function handler(req, res) {
     res.end(JSON.stringify({ error: '검색에 실패했어요. 잠시 뒤에 다시 시도해 주세요.' }));
   }
 };
+
+// tools/prefetch.js가 같은 정규화와 호출 코드를 쓰도록 내보낸다
+module.exports.norm = norm;
+module.exports.fetchApify = fetchApify;
