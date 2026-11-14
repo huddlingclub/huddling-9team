@@ -1,26 +1,27 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>결제 · 텅장구조대</title><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="/assets/style.css"></head><body>
-<header class="top" id="top"></header>
-<main class="wrap pb1"><h2 class="page-title">결제</h2>
+<header class="top" id="top" data-title="주문/결제" data-back="/cart.html"></header>
+<main class="wrap pb1" style="padding-top:8px">
   <section class="box"><h3>배송지</h3><input id="nick" maxlength="20" placeholder="받는 분 이름 (영수증에 찍혀요)" aria-label="받는 분 이름"><p class="note" style="margin:8px 0 0">상상 속 우리 집으로 보내드려요.</p></section>
   <section class="box"><h3>주문 상품</h3><div id="items"></div></section>
   <section class="box"><h3>결제 수단</h3><div class="pay" id="pay"></div></section>
-  <section class="box"><h3>금액 요약</h3><div id="sum"></div></section>
-  <p class="note">결제하기를 눌러도 실제로 돈이 나가지 않아요.</p>
+  <section class="paysum" id="sum" aria-label="결제 금액"></section>
 </main>
-<div class="bar"><div class="wrap"><button class="btn" id="go">결제하기</button></div></div>
-<div class="overlay" id="ov"><div><h2>결제 진행 중</h2><p id="ovp">통장은 안전해요</p><div class="track"><i id="bar"></i></div></div></div>
+<div class="bar paybar"><button class="paynow" id="go">결제하기</button></div>
+<div class="overlay" id="ov"><div><h2>결제 진행 중</h2><p id="ovp">결제를 진행하고 있어요. 화면을 닫지 마세요.</p><div class="track"><i id="bar"></i></div></div></div>
 <script src="/assets/app.js"></script>
 <script>
-const c=cart.get(); if(!c.length) location.replace('/cart.html');
+const c=cart.picked(); if(!c.length) location.replace('/cart.html');
 const METHODS=['상상카드','허공페이','상상입금']; let method=METHODS[0];
 document.getElementById('items').innerHTML=c.map(x=>`<div class="it"><span>${esc(x.name)} × ${x.qty}</span><span>${won(x.price*x.qty)}</span></div>`).join('');
 const pay=document.getElementById('pay');
 const drawPay=()=>pay.innerHTML=METHODS.map(m=>`<button data-m="${m}" class="${m===method?'on':''}">${m}</button>`).join('');
 pay.onclick=e=>{if(e.target.dataset.m){method=e.target.dataset.m;drawPay()}};drawPay();
-document.getElementById('sum').innerHTML=`<div class="l"><span>상품 금액</span><span>${won(cart.total())}</span></div><div class="l"><span>가상 결제</span><span>- ${won(cart.total())}</span></div><div class="l t"><span>실제로 나가는 돈</span><span>0원</span></div>`;
-const MSG=['상상카드 승인 요청 중','통장 잔고 확인 중 (보지 마세요)','카드값 걱정 필터 적용 중','결제 승인'];
+const LIST=c.reduce((a,x)=>a+(x.listPrice||x.price)*x.qty,0),TOT=cart.total(),DC=LIST-TOT;
+document.getElementById('sum').innerHTML=`<div class="l"><span>상품 금액</span><span>${won(LIST)}</span></div>${DC>0?`<div class="l dc"><span>최대 할인 금액 <em class="tag">자동 적용</em></span><span>-${won(DC)}</span></div>`:''}<div class="l"><span>배송비</span><span>무료</span></div><div class="l t"><span>총 결제 금액</span><b>${won(TOT)}</b></div>`;
+document.getElementById('go').textContent=`${won(TOT)} 결제하기`;
+const MSG=['결제를 진행하고 있어요. 화면을 닫지 마세요.','카드사에 승인을 요청하고 있어요','결제 정보를 확인하고 있어요','결제가 승인되었어요'];
 document.getElementById('go').onclick=()=>{
   const nick=document.getElementById('nick').value.trim()||'익명의 텅장러';
   const order={id:'TJ'+Date.now().toString(36).toUpperCase(),nick,method,at:new Date().toISOString(),items:c,total:cart.total()};
