@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>구조 보고서 · 텅장구조대</title><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="/assets/style.css"></head><body class="dark">
-<main class="wrap" id="m" style="padding-bottom:120px"></main>
+<main class="rcpt-page" id="m"></main>
 <div class="bar"><div class="wrap"><div class="btnrow"><a class="btn sec lg" href="/">처음으로</a><button class="btn" onclick="print()">영수증 저장</button></div></div></div>
 <script src="/assets/app.js"></script>
 <script>
@@ -10,14 +10,79 @@ const o=load(ORDERS,[]).find(x=>x.id===id);
 const m=document.getElementById('m');
 if(!o){document.body.classList.remove('dark');m.innerHTML='<div class="empty">구조 보고서를 찾을 수 없어요.<br><a class="btn sec" href="/search.html">쇼핑하러 가기</a></div>'}
 else{
-  const qty=o.items.reduce((a,b)=>a+b.qty,0),d=new Date(o.at).toLocaleString('ko-KR');
-  m.innerHTML=`<div class="printer"><div class="receipt"><h3>텅장구조대</h3><div class="c sub">구조 보고서</div><hr>
-  <div class="rl"><span>주문번호</span><span>${esc(o.id)}</span></div><div class="rl"><span>일시</span><span>${esc(d)}</span></div>
-  <div class="rl"><span>받는 분</span><span>${esc(o.nick)}</span></div><div class="rl"><span>결제수단</span><span>${esc(o.method)}</span></div><hr>
-  ${o.items.map(x=>`<div class="rl"><span>${esc(x.name)}</span><span>× ${x.qty}</span></div><div class="rl sub"><span></span><span>${won(x.price*x.qty)}</span></div>`).join('')}<hr>
-  <div class="rl"><span>상품 ${qty}개 합계</span><span>${won(o.total)}</span></div>
-  <div class="rl b"><span>실제 결제 금액</span><span>0원</span></div>
-  <div class="rl b"><span>지켜낸 내 돈</span><span>${won(o.total)}</span></div><hr>
-  <div class="c">통장은 평화롭습니다.</div><span class="stamp">대리만족 완료</span></div></div>`;
+  const qty=o.items.reduce((a,b)=>a+b.qty,0);
+  // 한국 시간 기준 날짜와 시각, 구조 번호(TJ-날짜-4자리)
+  const k=new Date(new Date(o.at).getTime()+9*3600*1000).toISOString();
+  const day=k.slice(0,10).replace(/-/g,'.'),hm=k.slice(11,16);
+  const no='TJ-'+k.slice(0,10).replace(/-/g,'')+'-'+String(parseInt(o.id.slice(2),36)%10000).padStart(4,'0');
+  m.innerHTML=`<article class="receipt" aria-label="구조 보고서">
+    <div class="meta-top"><span>NO. ${esc(no)}</span><span>POS 09</span></div>
+    <h1 class="brand"><img src="/assets/logo.png" width="640" height="437" alt="텅장구조대 BANK RESCUE"></h1>
+    <p class="report-bar"><span>구조 보고서</span><span>RESCUE REPORT</span></p>
+
+    <p class="slogan">사고 싶은 거, 다 사세요.<br>통장은 저희가 지킵니다.</p>
+    <p class="datetime">${day} ${hm} · ${esc(o.method)}</p>
+
+    <div class="dash"></div>
+    <p class="banner">* * * 구조 완료 * * *</p>
+    <div class="dash"></div>
+
+    <ul class="items">
+      ${o.items.map(x=>`<li>
+        <div class="item-top"><span class="item-name">${esc(x.name)}</span><span class="item-qty">× ${x.qty}</span></div>
+        <p class="item-price">${won(x.price*x.qty)}</p>
+      </li>`).join('')}
+    </ul>
+
+    <div class="dash"></div>
+    <div class="totals">
+      <div class="row"><span>상품 ${qty}개 합계</span><span class="amt">${won(o.total)}</span></div>
+      <div class="row strong"><span>실제 결제 금액</span><span class="amt">0원</span></div>
+      <div class="row saved"><span>지켜낸 내 돈</span><span class="amt">${won(o.total)}</span></div>
+    </div>
+
+    <p class="cut">여기를 자르세요</p>
+
+    <section class="cert" aria-label="구조 증명서">
+      <p class="cert-en">CERTIFICATE OF RESCUE</p>
+      <h2 class="cert-title">구조증명서</h2>
+      <p class="cert-body">${esc(o.nick)} 님은 오늘<br>사고 싶은 걸 다 사고도<br>아래 금액을 지켜냈음을 증명합니다.</p>
+      <p class="cert-amount">₩${o.total.toLocaleString('ko-KR')}</p>
+
+      <dl class="cert-sign">
+        <dt>통장<br>(서명)</dt>
+        <dd>
+          <svg class="signature" viewBox="0 0 92 28" aria-label="통장의 서명">
+            <path d="M4 20 C 8 8, 10 6, 12 18 C 14 8, 17 6, 19 18 C 21 9, 24 7, 26 17 C 28 12, 32 11, 36 16 C 42 22, 50 10, 58 14 C 64 17, 70 15, 78 12"/>
+            <path d="M30 24 C 46 22, 66 21, 88 19"/>
+          </svg>
+        </dd>
+      </dl>
+
+      <p class="cert-foot">${day} · 텅장구조대</p>
+
+      <svg class="stamp" viewBox="0 0 100 100" role="img" aria-label="구조 완료 도장">
+        <defs>
+          <path id="ring" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0"/>
+          <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="noise"/>
+            <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.7" result="holes"/>
+            <feComposite in="SourceGraphic" in2="holes" operator="in" result="worn"/>
+            <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="1" seed="2" result="warp"/>
+            <feDisplacementMap in="worn" in2="warp" scale="2"/>
+          </filter>
+        </defs>
+        <g filter="url(#ink)" fill="none" stroke="currentColor">
+          <circle cx="50" cy="50" r="47" stroke-width="3"/>
+          <circle cx="50" cy="50" r="29" stroke-width="1.2"/>
+          <text fill="currentColor" stroke="none" font-size="8.5" font-weight="700" letter-spacing="1">
+            <textPath href="#ring" textLength="222">TEONGJANG RESCUE TEAM ★ SINCE 2026 ★</textPath>
+          </text>
+          <rect x="22" y="40" width="56" height="20" stroke-width="2"/>
+          <text x="50" y="55" fill="currentColor" stroke="none" font-size="13" font-weight="800" text-anchor="middle">구조완료</text>
+        </g>
+      </svg>
+    </section>
+  </article>`;
 }
 </script></body></html>

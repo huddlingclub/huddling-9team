@@ -157,21 +157,56 @@ main.pb1{padding-bottom:100px}main.pb2{padding-bottom:140px}
 .toast{position:fixed;left:50%;bottom:96px;z-index:30;width:calc(min(375px,100vw) - 32px);padding:14px 16px;border-radius:4px;background:var(--toast);color:var(--canvas);font-size:14px;line-height:1.5;opacity:0;pointer-events:none;transform:translate(-50%,8px);transition:opacity .2s,transform .2s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* 구조 보고서 */
+/* 구조 보고서(영수증): 디자이너 시안(텅장구조대-영수증.html)을 .receipt 아래로 옮겼다.
+   종이 질감(feTurbulence)과 톱니 마스크(conic-gradient)는 시안의 예외다(DESIGN.md 참고) */
 body.dark{background:var(--dark)}
-.printer{width:280px;margin:32px auto 0;overflow:hidden}
-.receipt{width:280px;padding:20px 16px 28px;background:var(--paper);color:var(--ink);font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums;animation:print 1.6s ease-out both;clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),273px 100%,266px calc(100% - 6px),259px 100%,252px calc(100% - 6px),245px 100%,238px calc(100% - 6px),231px 100%,224px calc(100% - 6px),217px 100%,210px calc(100% - 6px),203px 100%,196px calc(100% - 6px),189px 100%,182px calc(100% - 6px),175px 100%,168px calc(100% - 6px),161px 100%,154px calc(100% - 6px),147px 100%,140px calc(100% - 6px),133px 100%,126px calc(100% - 6px),119px 100%,112px calc(100% - 6px),105px 100%,98px calc(100% - 6px),91px 100%,84px calc(100% - 6px),77px 100%,70px calc(100% - 6px),63px 100%,56px calc(100% - 6px),49px 100%,42px calc(100% - 6px),35px 100%,28px calc(100% - 6px),21px 100%,14px calc(100% - 6px),7px 100%,0px calc(100% - 6px))}
-@keyframes print{from{transform:translateY(-100%)}to{transform:none}}
-.receipt h3{margin:0;text-align:center;font-size:18px;font-weight:700;line-height:1.3}
-.receipt .c{text-align:center}
-.receipt hr{margin:12px 0;border:0;border-top:1px dashed var(--ink)}
-.receipt .rl{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
-.receipt .rl span:last-child{flex-shrink:0;text-align:right}
-.receipt .rl.b{font-size:14px;font-weight:700}
-.receipt .sub{color:var(--ink-3)}
-.stamp{display:block;width:max-content;margin:16px auto 0;padding:2px 12px;border:2px solid var(--ink);border-radius:2px;font-size:14px;font-weight:700;transform:rotate(-6deg)}
+.rcpt-page{max-width:375px;margin:0 auto;padding:40px 16px 120px}
+.receipt{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--fiber:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .35' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .26 0 0 0 0 .18 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E")}
+.receipt .stamp{color:var(--accent)}
+.receipt *{margin:0;padding:0;box-sizing:border-box}
+.receipt{width: 280px; margin: 0 auto; padding: 28px 16px 36px; background-color: var(--paper); background-image: var(--grain), var(--fiber); font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; --tooth:8px; -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth)) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--tooth) * 2) var(--tooth) repeat-x; mask: linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth)) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--tooth) * 2) var(--tooth) repeat-x; animation: print 1.6s steps(24, end) both;}
+@keyframes print{
+    from { clip-path: inset(0 0 100% 0); transform: translateY(-12px); }
+    to   { clip-path: inset(0 0 0 0);    transform: translateY(0); }
+  }
+@media (prefers-reduced-motion: reduce){
+    .receipt { animation: none; }
+  }
+.receipt > *{mix-blend-mode: multiply;}
+.receipt .meta-top{display: flex; justify-content: space-between; font-size: 10px; line-height: 1.2; font-weight: 500; letter-spacing: 0.04em;}
+.receipt .brand{margin: 12px 0 8px;}
+.receipt .brand img{display: block; width: 50%; height: auto; margin: 0 auto; mix-blend-mode: multiply;}
+.receipt .report-bar{margin-top: 4px; display: flex; justify-content: space-between; background: var(--ink); color: var(--paper); padding: 5px 8px; font-size: 11px; line-height: 1.36; font-weight: 700; letter-spacing: 0.12em;}
+.receipt .slogan{margin-top: 12px; text-align: center; font-weight: 700;}
+.receipt .datetime{margin-top: 4px; text-align: center; letter-spacing: 0.08em;}
+.receipt .dash{border-top: 1px dashed var(--ink); margin: 12px 0;}
+.receipt .banner{text-align: center; font-weight: 700; letter-spacing: 0.16em;}
+.receipt .items{list-style: none; display: flex; flex-direction: column; gap: 10px;}
+.receipt .item-top{display: flex; justify-content: space-between; gap: 12px;}
+.receipt .item-name{word-break: keep-all;}
+.receipt .item-qty{flex-shrink: 0;}
+.receipt .item-price{text-align: right; color: var(--ink-3);}
+.receipt .row{display: flex; justify-content: space-between; align-items: baseline; gap: 12px;}
+.receipt .totals{display: flex; flex-direction: column; gap: 6px;}
+.receipt .totals .strong{font-size: 14px; font-weight: 700;}
+.receipt .totals .saved{font-size: 16px; font-weight: 800;}
+.receipt .totals .saved .amt{color: var(--accent);}
+.receipt .cut{margin: 20px -16px 16px; display: flex; align-items: center; gap: 8px; font-size: 10px; line-height: 1.2; font-weight: 500; color: var(--muted); letter-spacing: 0.08em;}
+.receipt .cut::before,.receipt .cut::after{content: ""; flex: 1; border-top: 1px dashed var(--muted);}
+.receipt .cert{border: 3px double var(--ink); outline: 1px solid var(--ink); outline-offset: 3px; margin: 4px; padding: 16px 12px 12px; text-align: center; position: relative;}
+.receipt .cert-en{font-size: 10px; line-height: 1.2; font-weight: 500; letter-spacing: 0.2em;}
+.receipt .cert-title{margin-top: 6px; font-size: 20px; line-height: 1.3; font-weight: 800; letter-spacing: 0.4em; padding-left: 0.4em;}
+.receipt .cert-body{margin-top: 10px; color: var(--ink-2); word-break: keep-all;}
+.receipt .cert-amount{margin-top: 10px; font-size: 23px; line-height: 1.3; font-weight: 800; letter-spacing: -0.5px; color: var(--accent);}
+.receipt .cert-sign{margin-top: 12px; display: flex; align-items: flex-end; gap: 8px; text-align: left;}
+.receipt .cert-sign dt{flex-shrink: 0; font-size: 10px; line-height: 1.2; font-weight: 500;}
+.receipt .cert-sign dd{flex: 1; border-bottom: 1px solid var(--ink); height: 28px; padding-right: 52px;}
+.receipt .signature{display: block; width: 92px; height: 28px; overflow: visible;}
+.receipt .signature path{fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;}
+.receipt .cert-foot{margin-top: 12px; font-size: 10px; line-height: 1.2; font-weight: 500; letter-spacing: 0.08em;}
+.receipt .stamp{position: absolute; right: -6px; bottom: 6px; width: 84px; height: 84px; transform: rotate(-14deg); mix-blend-mode: multiply;}
 body.dark .bar{border-top-color:var(--line)}
-@media print{header.top,.bar,.toast{display:none}body.dark{background:var(--canvas)}.printer{margin-top:0}.receipt{animation:none}}
+@media print{header.top,.bar,.toast{display:none}body.dark{background:var(--canvas)}.receipt{animation:none}}
 
 
 /* 추천 칩: 한 줄로 두고 줄 안에서만 옆으로 민다(페이지 가로 스크롤은 없다) */
@@ -190,20 +225,22 @@ a.chip{display:inline-flex;align-items:center}
 /* 스플래시: 사진 3장 인트로 -> 검은 바탕의 로고 -> 흰 바탕으로 전환하며 로고가 제자리로 */
 .sp-photos{display:none}
 html.splash .sp-photos{display:block;position:fixed;inset:0;z-index:50;overflow:hidden;background:var(--ink)}
-.sp-photos img{position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:cover}
-.sp-photos img.on{display:block}
-.sp-photos img.in{animation:spslide .12s ease-out both}
+.sp-slide{position:absolute;inset:0;display:none;overflow:hidden;background:var(--ink)}
+.sp-slide.on{display:block}
+.sp-slide.in{animation:spslide .18s ease-out both}
 @keyframes spslide{from{transform:translateX(100%)}to{transform:none}}
-html.splash,html.splash body{background-color:var(--ink);transition:background-color .6s}
+.sp-slide .bg{position:absolute;inset:-10%;background:var(--src) center/cover no-repeat;filter:blur(28px) brightness(.5)}
+.sp-slide .fg{position:absolute;left:50%;top:50%;width:min(100%,393px);height:auto;max-height:100%;border-radius:4px;object-fit:contain;transform:translate(-50%,-50%)}
+html.splash,html.splash body{background-color:var(--ink);transition:background-color .9s}
 html.splash.sp-go,html.splash.sp-go body{background-color:var(--canvas)}
 html.splash body{overflow:hidden}
 html.splash .landing{pointer-events:none}
 html.splash:not(.sp-ready) .brand{visibility:hidden}
 html.splash .brand{transform-origin:50% 50%}
-html.splash .brand img{filter:invert(1);transition:filter .6s}
+html.splash .brand img{filter:invert(1);transition:filter .9s}
 html.splash.sp-go .brand img{filter:invert(0)}
 html.splash .fade{opacity:0}
-html.splash.sp-go .fade{animation:spup .4s ease-out both;animation-delay:calc(.4s + var(--i,0) * .05s)}
+html.splash.sp-go .fade{animation:spup .5s ease-out both;animation-delay:calc(.6s + var(--i,0) * .07s)}
 @keyframes spup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* 동작 줄이기: 움직임은 이 규칙에 맡긴다. 항상 맨 아래에 둔다 */
