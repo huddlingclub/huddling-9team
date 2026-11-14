@@ -12,15 +12,15 @@
 
 | 1. 랜딩 | 2. 상품 검색 | 3. 담은 상태 |
 |---|---|---|
-| <img src="docs/screenshots/01-landing.png" width="240"> | <img src="docs/screenshots/02-search.png" width="240"> | <img src="docs/screenshots/03-search-in-cart.png" width="240"> |
+| <img src="docs/screenshots/01-landing-v2.png" width="240"> | <img src="docs/screenshots/02-search-v2.png" width="240"> | <img src="docs/screenshots/03-search-in-cart-v2.png" width="240"> |
 
 | 4. 장바구니 | 5. 가상 결제 | 6. 결제 진행 중 |
 |---|---|---|
-| <img src="docs/screenshots/04-cart.png" width="240"> | <img src="docs/screenshots/05-checkout.png" width="240"> | <img src="docs/screenshots/06-paying.png" width="240"> |
+| <img src="docs/screenshots/04-cart-v2.png" width="240"> | <img src="docs/screenshots/05-checkout-v2.png" width="240"> | <img src="docs/screenshots/06-paying-v2.png" width="240"> |
 
 | 7. 구조 보고서 |
 |---|
-| <img src="docs/screenshots/07-receipt.png" width="240"> |
+| <img src="docs/screenshots/07-receipt-v2.png" width="240"> |
 
 ## 사용법
 
