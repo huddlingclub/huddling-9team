@@ -21,16 +21,15 @@ const cart = {
 function header() {
   const el = document.getElementById('top');
   if (!el) return;
-  el.innerHTML = `<div class="wrap"><a class="logo" href="/">텅장<b>구조대</b> 🚨</a>
+  el.innerHTML = `<div class="wrap"><a class="logo" href="/">텅장구조대</a>
   <a class="cartlink" href="/cart.html">장바구니<i id="badge">${cart.count()}</i></a></div>`;
-  const b=document.getElementById('badge'); if(b&&window._lastCount!==undefined&&window._lastCount!==cart.count()){b.classList.add('bump');setTimeout(()=>b.classList.remove('bump'),300)}
   window._lastCount=cart.count();
   if(window.onCart) window.onCart();
 }
 function toast(msg) {
   let t = document.querySelector('.toast');
   if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.append(t); }
-  t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1600);
+  t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1400);
 }
 document.addEventListener('DOMContentLoaded', header);
-(() => { const l = document.createElement('link'); l.rel = 'icon'; l.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚨</text></svg>"; document.head.append(l); })();
+(() => { const l = document.createElement('link'); l.rel = 'icon'; l.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text x='50' y='72' font-size='64' font-weight='700' fill='white' text-anchor='middle'>텅</text></svg>"; document.head.append(l); })();

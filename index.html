@@ -1,23 +1,31 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>텅장구조대</title><meta name="description" content="돈은 없지만 지르고 싶은 날. 가상으로 결제하고 대리만족하세요. 통장은 그대로입니다.">
-<link rel="stylesheet" href="/assets/style.css"></head><body>
-<header class="top" id="top"></header>
-<main class="wrap">
-  <section class="hero">
-    <div class="balance">내 통장 잔고 <em>12원</em> 💸</div>
-    <h1>사고 싶은 건 많은데<br><span class="hl">통장이 텅</span> 비었나요?</h1>
-    <p>네이버쇼핑 실제 상품을 골라 담고, 가상으로 결제하세요.<br>카드값은 0원, 만족감은 진짜입니다.</p>
-    <form class="searchbar" action="/search.html" style="max-width:560px;margin:0 auto 12px"><input name="q" placeholder="뭐 지르고 싶어요? 예) 맥북, 에어팟" required><button class="btn">지르기</button></form>
-    <div class="chips" style="justify-content:center"><span class="note">인기 지름템</span>
-      <a class="chip" href="/search.html?q=맥북">💻 맥북</a><a class="chip" href="/search.html?q=닌텐도 스위치">🎮 닌텐도</a><a class="chip" href="/search.html?q=다이슨">💨 다이슨</a><a class="chip" href="/search.html?q=레고">🧱 레고</a><a class="chip" href="/search.html?q=캠핑의자">⛺ 캠핑</a></div>
-  </section>
-  <section class="steps">
-    <div class="step"><b>🔍</b>상품 검색<br><span class="note">진짜 네이버쇼핑 상품이 나와요</span></div>
-    <div class="step"><b>🛒</b>장바구니<br><span class="note">원 없이 담아보세요</span></div>
-    <div class="step"><b>💳</b>가상 결제<br><span class="note">돈은 한 푼도 안 나가요</span></div>
-    <div class="step"><b>🧾</b>영수증 발급<br><span class="note">아낀 돈까지 계산해 드려요</span></div>
-  </section>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.landing{padding:48px 16px 24px}
+.landing .logo-big{font-size:48px;font-weight:800;line-height:1;letter-spacing:-2px;margin:0}
+.landing .en{font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 32px}
+.landing .intro{font-size:23px;font-weight:600;line-height:1.3;margin:0 0 28px}
+.landing ul{list-style:none;margin:0 0 24px;padding:0;border-bottom:1px solid var(--line)}
+.landing li{border-top:1px solid var(--line);padding:12px 0;font-size:14px;color:var(--ink-2)}
+.landing .chips{margin:0 0 32px}
+</style>
+</head><body>
+<main class="wrap landing">
+  <h1 class="logo-big">텅장구조대</h1>
+  <p class="en">RESCUE YOUR ACCOUNT 2026</p>
+  <p class="intro">사고 싶은 건 많은데<br>통장이 텅 비었나요?</p>
+  <ul>
+    <li>네이버쇼핑 실제 상품을 골라 담아요.</li>
+    <li>가상으로 결제해요. 실제로 나가는 돈은 0원이에요.</li>
+    <li>마지막에 지켜낸 돈이 찍힌 영수증을 받아요.</li>
+  </ul>
+  <form class="searchbar" action="/search.html"><input name="q" placeholder="뭐 지르고 싶어요? 예) 맥북" required aria-label="검색어"></form>
+  <div class="chips"><span class="note">인기 지름템</span>
+    <a class="chip" href="/search.html?q=맥북">맥북</a><a class="chip" href="/search.html?q=닌텐도 스위치">닌텐도</a><a class="chip" href="/search.html?q=다이슨">다이슨</a><a class="chip" href="/search.html?q=레고">레고</a><a class="chip" href="/search.html?q=캠핑의자">캠핑</a></div>
+  <a class="btn" href="/search.html">구조 요청하기</a>
 </main>
 <footer>텅장구조대는 실제 결제가 일어나지 않는 체험 서비스입니다. 상품 정보는 네이버쇼핑 기준이며 구매는 연결되지 않습니다.</footer>
 <script src="/assets/app.js"></script></body></html>

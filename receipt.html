@@ -1,27 +1,27 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>영수증 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<title>영수증 · 텅장구조대</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="/assets/style.css"></head><body class="dark">
 <header class="top" id="top"></header>
-<main class="wrap" id="m"></main>
+<main id="m"></main>
 <script src="/assets/app.js"></script>
 <script>
 const id=new URLSearchParams(location.search).get('id');
 const o=load(ORDERS,[]).find(x=>x.id===id);
 const m=document.getElementById('m');
-if(!o){m.innerHTML='<div class="empty">영수증을 찾을 수 없어요.<br><br><a class="btn" href="/search.html">쇼핑하러 가기</a></div>'}
+if(!o){document.body.classList.remove('dark');m.innerHTML='<div class="wrap empty">영수증을 찾을 수 없어요.<br><a class="btn sub" href="/search.html">쇼핑하러 가기</a></div>'}
 else{
   const qty=o.items.reduce((a,b)=>a+b.qty,0),d=new Date(o.at).toLocaleString('ko-KR');
   const LINES=['지름신이 흡족해합니다','통장은 평화롭습니다','마음속 택배가 도착했습니다','내일의 나에게 칭찬받을 소비입니다'];
-  m.innerHTML=`<div class="receipt"><h3>텅장구조대 🚨</h3><div class="c">가상 결제 영수증</div><hr>
+  m.innerHTML=`<div class="receipt"><h3>텅장구조대</h3><div class="c">가상 결제 영수증</div><hr>
   <div class="l"><span>주문번호</span><span>${esc(o.id)}</span></div><div class="l"><span>일시</span><span>${esc(d)}</span></div>
   <div class="l"><span>구매자</span><span>${esc(o.nick)}</span></div><div class="l"><span>결제수단</span><span>${esc(o.method)}</span></div><hr>
-  ${o.items.map(x=>`<div class="l"><span>${esc(x.name)}</span><span>×${x.qty}</span></div><div class="l" style="color:#777"><span></span><span>${won(x.price*x.qty)}</span></div>`).join('')}<hr>
+  ${o.items.map(x=>`<div class="l"><span>${esc(x.name)}</span><span>×${x.qty}</span></div><div class="l sub"><span></span><span>${won(x.price*x.qty)}</span></div>`).join('')}<hr>
   <div class="l"><span>상품 ${qty}개 합계</span><span>${won(o.total)}</span></div>
   <div class="l big"><span>실제 결제 금액</span><span>0원</span></div>
-  <div class="l big" style="color:#16a34a"><span>지켜낸 내 돈</span><span>${won(o.total)}</span></div><hr>
-  <div class="c">${LINES[o.total%LINES.length]}</div><span class="stamp">대리만족 완료</span></div>
-  <div class="actions"><button class="btn" onclick="share()">공유하기</button><button class="btn ghost" onclick="print()">영수증 저장/인쇄</button><a class="btn ghost" href="/search.html">또 지르기</a></div>`;
-  window.share=async()=>{const text=`텅장구조대에서 ${won(o.total)}어치 가상으로 질렀다 🧾 실제 결제 0원`;
-    try{navigator.share?await navigator.share({title:'텅장구조대',text,url:location.origin}):(await navigator.clipboard.writeText(text+' '+location.origin),toast('복사했어요'))}catch{}};
+  <div class="l big"><span>지켜낸 내 돈</span><span>${won(o.total)}</span></div><hr>
+  <div class="c">${LINES[o.total%LINES.length]}</div><div class="c">대리만족 완료</div></div>
+  <div class="actions btns"><a class="btn ghost" href="/">처음으로</a><button class="btn main" onclick="print()">영수증 저장</button></div>`;
 }
 </script></body></html>
