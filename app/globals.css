@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+body {
+  background: #f5f6f8;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
