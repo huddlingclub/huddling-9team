@@ -8,19 +8,19 @@
 
 ## 화면
 
-**랜딩 → 상품 검색 → 장바구니 → 결제 → 구조 보고서(영수증)** 순서로 이어집니다.
+**스플래시 → 랜딩(검색) → 상품 검색 → 장바구니 → 결제 → 구조 보고서(영수증)** 순서로 이어집니다.
 
-| 1. 랜딩 | 2. 상품 검색 | 3. 담은 상태 |
+| 1. 스플래시(질문과 답) | 2. 랜딩 | 3. 상품 검색 |
 |---|---|---|
-| <img src="docs/screenshots/01-landing-v3.png" width="240"> | <img src="docs/screenshots/02-search-v2.png" width="240"> | <img src="docs/screenshots/03-search-in-cart-v2.png" width="240"> |
+| <img src="docs/screenshots/00-splash-v4.png" width="240"> | <img src="docs/screenshots/01-landing-v4.png" width="240"> | <img src="docs/screenshots/02-search-v4.png" width="240"> |
 
-| 4. 장바구니 | 5. 가상 결제 | 6. 결제 진행 중 |
+| 4. 담은 상태 | 5. 장바구니 | 6. 가상 결제 |
 |---|---|---|
-| <img src="docs/screenshots/04-cart-v2.png" width="240"> | <img src="docs/screenshots/05-checkout-v2.png" width="240"> | <img src="docs/screenshots/06-paying-v2.png" width="240"> |
+| <img src="docs/screenshots/03-search-in-cart-v4.png" width="240"> | <img src="docs/screenshots/04-cart-v4.png" width="240"> | <img src="docs/screenshots/05-checkout-v4.png" width="240"> |
 
-| 7. 구조 보고서 |
-|---|
-| <img src="docs/screenshots/07-receipt-v2.png" width="240"> |
+| 7. 결제 진행 중 | 8. 구조 보고서 |
+|---|---|
+| <img src="docs/screenshots/06-paying-v4.png" width="240"> | <img src="docs/screenshots/07-receipt-v4.png" width="240"> |
 
 ## 사용법
 
@@ -30,7 +30,7 @@
 2. **검색**에서 사고 싶은 것을 검색하고, 정렬(추천순, 리뷰 많은순, 낮은 가격, 높은 가격)을 고른 뒤 **담기**를 누릅니다. 정렬은 서버를 다시 부르지 않고 가져온 상품 안에서 화면이 다시 늘어놓습니다. 담은 상품은 `− 1 +`처럼 수량 조절로 바뀌어 그 자리에서 수량을 늘리거나 뺄 수 있고, 화면 아래에 담은 개수와 합계가 뜹니다.
 3. **장바구니**에서 수량을 고치거나 `삭제`합니다. 담은 게 없으면 `주문하기`가 비활성입니다.
 4. **결제**에서 받는 분 이름(영수증에 찍힙니다)과 가상 결제 수단(상상카드, 허공페이, 상상입금)을 고르고 `결제하기`를 누릅니다. 카드 번호 등 결제 정보는 받지 않습니다.
-5. **구조 보고서**에서 주문 내역과 "지켜낸 내 돈"을 확인합니다. `영수증 저장`은 인쇄 창을 열어 PDF로 저장할 수 있고, `처음으로`는 랜딩으로 돌아갑니다.
+5. **구조 보고서**에서 주문 내역과 "지켜낸 내 돈"을 확인합니다. `영수증 저장`은 화면 그대로 이미지(JPEG)로 저장합니다(모바일은 공유 시트에서 이미지 저장·공유, PC는 파일로 내려받기. 만들지 못하면 인쇄 창으로 대신합니다). `처음으로`는 랜딩으로 돌아갑니다.
 
 장바구니와 주문 내역은 브라우저 `localStorage`에 저장됩니다. 서버에는 아무것도 저장하지 않습니다.
 
