@@ -1,4 +1,4 @@
-// 공용: 장바구니(localStorage) · 포맷 · 헤더
+// 공용: 장바구니(localStorage) · 포맷 · 상단바 · 토스트
 const KEY = 'tj_cart', ORDERS = 'tj_orders';
 const won = (n) => Number(n || 0).toLocaleString('ko-KR') + '원';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -20,17 +20,20 @@ const cart = {
 
 function header() {
   const el = document.getElementById('top');
-  if (!el) return;
-  el.innerHTML = `<div class="wrap"><a class="logo" href="/">텅장<b>구조대</b> 🚨</a>
-  <a class="cartlink" href="/cart.html">장바구니<i id="badge">${cart.count()}</i></a></div>`;
-  const b=document.getElementById('badge'); if(b&&window._lastCount!==undefined&&window._lastCount!==cart.count()){b.classList.add('bump');setTimeout(()=>b.classList.remove('bump'),300)}
-  window._lastCount=cart.count();
-  if(window.onCart) window.onCart();
+  if (el) {
+    el.innerHTML = `<div class="wrap"><a class="logo" href="/">텅장구조대</a>
+    <a class="cartlink" href="/cart.html">장바구니<span id="badge">${cart.count()}</span></a></div>`;
+    const b = document.getElementById('badge');
+    if (b && window._lastCount !== undefined && window._lastCount !== cart.count()) { b.classList.add('bump'); setTimeout(() => b.classList.remove('bump'), 300); }
+  }
+  window._lastCount = cart.count();
+  if (window.onCart) window.onCart();
 }
 function toast(msg) {
   let t = document.querySelector('.toast');
   if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.append(t); }
-  t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1600);
+  t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1400);
 }
 document.addEventListener('DOMContentLoaded', header);
-(() => { const l = document.createElement('link'); l.rel = 'icon'; l.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚨</text></svg>"; document.head.append(l); })();
+// 이모지를 쓰지 않으므로 파비콘도 글자로 만든다
+(() => { const l = document.createElement('link'); l.rel = 'icon'; l.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='black'/><text x='50' y='72' font-size='64' font-weight='800' text-anchor='middle' fill='white'>텅</text></svg>"; document.head.append(l); })();

@@ -2,50 +2,77 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>상품 검색 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
 <header class="top" id="top"></header>
-<main class="wrap">
-  <form class="searchbar" id="f"><input id="q" placeholder="뭐 사고 싶어요? 예) 에어팟, 캠핑의자" autofocus><button class="btn">검색</button></form>
+<main class="wrap pb0" id="main">
+  <form class="searchbar" id="f"><input id="q" placeholder="찾는 물건을 검색해 보세요" autocomplete="off"><button class="btn sec">검색</button></form>
   <div class="chips" id="sorts"></div>
   <div class="chips" id="sugg"></div>
+  <h2 class="sec-title" id="rt" hidden></h2>
   <p class="note" id="status"></p>
   <div class="grid" id="grid"></div>
 </main>
-<div class="cartbar" id="bar"><div class="wrap"><div><b id="bn"></b><small>실제 결제 0원 · 가상으로만 나가요</small></div><a class="btn" href="/cart.html">장바구니 보기 →</a></div></div>
+<div class="bar row slide" id="bar"><div class="wrap"><div class="t"><b id="bn"></b><span>실제 결제는 0원이에요</span></div><a class="btn" id="bgo" href="/cart.html">장바구니 보기</a></div></div>
 <script src="/assets/app.js"></script>
 <script>
-const SORTS=[['REL','추천순'],['PURCHASE','구매 많은순'],['REVIEW','리뷰 많은순'],['LOW_PRICE','낮은 가격'],['HIGH_PRICE','높은 가격 (지르는 맛)']];
-let sort='REL',items=[];
-const q=document.getElementById('q'),grid=document.getElementById('grid'),st=document.getElementById('status');
+// 정렬은 서버를 다시 부르지 않고 가져온 결과를 화면에서 늘어놓는다(Apify 호출 절약).
+// 가격·리뷰 정렬은 가져온 상품 안에서만 정렬된다.
+const SORTS=[['REL','추천순'],['REVIEW','리뷰 많은순'],['LOW_PRICE','낮은 가격'],['HIGH_PRICE','높은 가격']];
+const SORTER={REL:null,REVIEW:(a,b)=>b.reviews-a.reviews,LOW_PRICE:(a,b)=>a.price-b.price,HIGH_PRICE:(a,b)=>b.price-a.price};
+const CACHE_TTL=30*60*1000; // 브라우저(세션) 캐시
+let sort='REL',base=[],shown=[],term='',source='',ctrl=null;
+const q=document.getElementById('q'),grid=document.getElementById('grid'),st=document.getElementById('status'),rt=document.getElementById('rt'),sbtn=document.querySelector('#f button');
 document.getElementById('sorts').innerHTML=SORTS.map(([k,l])=>`<button class="chip ${k===sort?'on':''}" data-k="${k}">${l}</button>`).join('');
-document.getElementById('sugg').innerHTML='<span class="note">추천:</span>'+['에어팟','맥북','닌텐도 스위치','캠핑의자','레고'].map(s=>`<button class="chip" data-s="${s}">${s}</button>`).join('');
-document.getElementById('sorts').onclick=e=>{const k=e.target.dataset.k;if(!k)return;sort=k;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c.dataset.k===k));if(q.value.trim())run()};
+document.getElementById('sugg').innerHTML=['에어팟','맥북','닌텐도 스위치','캠핑의자','레고'].map(s=>`<button class="chip" data-s="${s}">${s}</button>`).join('');
+document.getElementById('sorts').onclick=e=>{const k=e.target.dataset.k;if(!k)return;sort=k;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c.dataset.k===k));if(base.length)render()};
 document.getElementById('sugg').onclick=e=>{if(e.target.dataset.s){q.value=e.target.dataset.s;run()}};
 document.getElementById('f').onsubmit=e=>{e.preventDefault();run()};
+
+const ckey=t=>'tj_s:'+t.toLowerCase();
+const readCache=t=>{try{const c=JSON.parse(sessionStorage.getItem(ckey(t)));return c&&Date.now()-c.at<CACHE_TTL?c:null}catch{return null}};
+const writeCache=(t,items)=>{try{sessionStorage.setItem(ckey(t),JSON.stringify({at:Date.now(),items}))}catch{}};
+
+function done(items,src){
+  base=items;source=src;
+  st.textContent=src==='mock'?'Apify 토큰이 없거나 연결에 실패해 샘플 상품을 보여드려요.':'';
+  rt.hidden=false;rt.textContent='"'+term+'" 검색 결과 '+items.length+'개';
+  render();
+}
 async function run(){
-  const term=q.value.trim(); if(!term)return;
-  history.replaceState(null,'','?q='+encodeURIComponent(term));
-  st.textContent='네이버쇼핑에서 찾는 중... (처음엔 10~30초 걸릴 수 있어요)';grid.innerHTML='<div class="skel"></div>'.repeat(8);
+  const t=q.value.trim().replace(/\s+/g,' ');
+  if(!t)return;
+  history.replaceState(null,'','?q='+encodeURIComponent(t));
+  if(t.toLowerCase()===term.toLowerCase()&&base.length){render();return} // 같은 검색어면 다시 부르지 않는다
+  term=t;
+  const c=readCache(t);
+  if(c){done(c.items,'apify');return}
+  if(ctrl)ctrl.abort();ctrl=new AbortController();
+  rt.hidden=true;st.textContent='네이버쇼핑에서 찾는 중이에요. 잠시만 기다려 주세요.';grid.style.display='';grid.innerHTML='<div class="skel"></div>'.repeat(4);
+  sbtn.disabled=true;
   try{
-    const r=await fetch('/api/search?q='+encodeURIComponent(term)+'&sort='+sort);
-    const d=await r.json(); if(!r.ok) throw new Error(d.error);
-    items=d.items; st.textContent=d.source==='mock'?`샘플 상품 ${items.length}개 (Apify 토큰 미설정 - 데모 데이터)`:`${items.length}개의 상품을 찾았어요`;
-    render();
-  }catch(err){st.textContent='검색에 실패했어요: '+err.message}
+    const r=await fetch('/api/search?q='+encodeURIComponent(t),{signal:ctrl.signal});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||'검색에 실패했어요.');
+    if(d.source==='apify')writeCache(t,d.items);
+    done(d.items,d.source);
+  }catch(err){
+    if(err.name==='AbortError')return;
+    term='';base=[];rt.hidden=true;st.textContent=err.message;grid.innerHTML='';
+  }finally{sbtn.disabled=false}
 }
-function btn(p,i){const n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
-  return n?`<div class="btn in"><button data-i="${i}" data-d="-1" aria-label="하나 빼기">−</button><span>✓ 담김 · ${n}개</span><button data-i="${i}" data-d="1" aria-label="하나 더">+</button></div>`
-  :`<button class="btn sm" data-i="${i}" data-d="1">담기</button>`}
+function ctl(p,i){const n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
+  return n?`<div class="in"><button data-i="${i}" data-d="-1" aria-label="하나 빼기">−</button><span>담김 ${n}</span><button data-i="${i}" data-d="1" aria-label="하나 더">+</button></div>`
+  :`<button class="add" data-i="${i}" data-d="1">담기</button>`}
 function render(){
-  if(!items.length){grid.innerHTML='<div class="empty">결과가 없어요 😢<br>다른 검색어로 지르러 가볼까요?</div>';return}
-  const inCart=new Set(cart.get().map(x=>x.id));
-  grid.innerHTML=items.map((p,i)=>`<div class="card ${inCart.has(p.id)?'in':''}" data-id="${esc(p.id)}">${inCart.has(p.id)?'<span class="tag">담음</span>':''}<img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-  <div class="b"><div class="mall">${esc(p.mall)}</div><div class="nm">${esc(p.name)}</div>
+  shown=SORTER[sort]?[...base].sort(SORTER[sort]):base;
+  if(!shown.length){grid.style.display='block';grid.innerHTML='<div class="empty">찾는 물건이 없어요. 다른 이름으로 검색해 보세요.</div>';return}
+  grid.style.display='';
+  grid.innerHTML=shown.map((p,i)=>`<div class="card"><img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+  <div class="mall">${esc(p.mall)}</div><div class="nm">${esc(p.name)}</div>
   <div class="price">${p.discount>0?`<span class="d">${p.discount}%</span>`:''}${won(p.price)}${p.discount>0?`<s>${won(p.listPrice)}</s>`:''}</div>
-  <div class="meta">${p.rating?`★ ${p.rating} · 리뷰 ${p.reviews.toLocaleString()}`:'리뷰 없음'}</div>
-  ${btn(p,i)}</div></div>`).join('');
+  <div class="meta">${p.rating?`평점 ${p.rating} · 리뷰 ${p.reviews.toLocaleString()}`:'리뷰 없음'}</div>
+  ${ctl(p,i)}</div>`).join('');
 }
-function bar(){const n=cart.count(),b=document.getElementById('bar');document.getElementById('bn').textContent=`${n}개 · ${won(cart.total())}`;b.classList.toggle('on',n>0);document.body.classList.toggle('hasbar',n>0)}
-window.onCart=()=>{bar();if(items.length)render()};
-grid.onclick=e=>{const {i,d}=e.target.dataset;if(i==null)return;const p=items[i],n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
-  if(!n)cart.add(p);else cart.set(p.id,n+Number(d));if(!n)toast('장바구니에 담았어요 🛒')};
+function bar(){const n=cart.count(),b=document.getElementById('bar');document.getElementById('bn').textContent=`${n}개 · ${won(cart.total())}`;document.getElementById('bgo').textContent=`장바구니 보기 (${n})`;b.classList.toggle('on',n>0);document.getElementById('main').classList.toggle('pb1',n>0)}
+window.onCart=()=>{bar();if(base.length)render()};
+grid.onclick=e=>{const {i,d}=e.target.dataset;if(i==null)return;const p=shown[i],n=(cart.get().find(x=>x.id===p.id)||{}).qty||0;
+  if(!n){cart.add(p);toast('장바구니에 담았어요. 아직 돈은 안 나갔어요.')}else cart.set(p.id,n+Number(d))};
 bar();const init=new URLSearchParams(location.search).get('q');if(init){q.value=init;run()}
 </script></body></html>

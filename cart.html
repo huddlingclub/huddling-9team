@@ -2,20 +2,23 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>장바구니 · 텅장구조대</title><link rel="stylesheet" href="/assets/style.css"></head><body>
 <header class="top" id="top"></header>
-<main class="wrap"><h2>🛒 장바구니</h2><div id="list"></div><div id="sum"></div></main>
+<main class="wrap pb2"><h2 class="page-title">장바구니</h2><div id="list"></div><div id="more"></div></main>
+<div class="bar"><div class="wrap"><div class="sum"><span>총 주문 예상 금액</span><b id="tot"></b></div><div id="go"></div></div></div>
 <script src="/assets/app.js"></script>
 <script>
 function draw(){
-  const c=cart.get(),l=document.getElementById('list'),s=document.getElementById('sum');
-  if(!c.length){l.innerHTML='<div class="empty">텅 비었네요. 통장처럼요 😇<br><br><a class="btn" href="/search.html">상품 보러 가기</a></div>';s.innerHTML='';return}
-  l.innerHTML=c.map(x=>`<div class="row"><img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i"><div>${esc(x.name)}</div><div class="price">${won(x.price)}${x.qty>1?` <span class="meta">× ${x.qty} = <b>${won(x.price*x.qty)}</b></span>`:''}</div></div>
-  <div class="qty"><button data-id="${esc(x.id)}" data-d="-1">−</button><b>${x.qty}</b><button data-id="${esc(x.id)}" data-d="1">+</button></div>
-  <button class="rm" data-id="${esc(x.id)}" data-d="rm" title="삭제">×</button></div>`).join('');
-  s.innerHTML=`<div class="sum"><div class="l"><span>상품 ${cart.count()}개</span><span>${won(cart.total())}</span></div><div class="l"><span>배송비</span><span>0원 (상상이니까)</span></div>
-  <div class="l t"><span>가상 결제 금액</span><span>${won(cart.total())}</span></div></div>
-  <p class="note center">내 잔고 12원의 <b>${Math.round(cart.total()/12).toLocaleString()}배</b>... 현실이었다면 큰일 날 뻔했어요 😇</p>
-  <a class="btn" style="display:block;text-align:center" href="/checkout.html">가상 결제하러 가기</a>
-  <p class="center"><a class="note" href="/search.html" style="text-decoration:underline">+ 더 담으러 가기</a></p>`;
+  const c=cart.get(),l=document.getElementById('list'),m=document.getElementById('more');
+  document.getElementById('tot').textContent=won(cart.total());
+  if(!c.length){
+    l.innerHTML='<div class="empty">장바구니가 비었어요. 통장처럼요.<br><a class="btn sec" href="/search.html">쇼핑하러 가기</a></div>';
+    m.innerHTML='';document.getElementById('go').innerHTML='<button class="btn" disabled>주문하기 (0)</button>';return}
+  l.innerHTML=c.map(x=>`<div class="line"><img src="${esc(x.image)}" alt="" referrerpolicy="no-referrer"><div class="i">
+    <div class="mall" style="margin-top:0">${esc(x.mall)}</div><div class="nm" style="min-height:0">${esc(x.name)}</div>
+    <div class="price">${won(x.price*x.qty)}</div>
+    <div class="ctl"><div class="stepper"><button data-id="${esc(x.id)}" data-d="-1" aria-label="하나 빼기">−</button><span>${x.qty}</span><button data-id="${esc(x.id)}" data-d="1" aria-label="하나 더">+</button></div>
+    <button class="textbtn" data-id="${esc(x.id)}" data-d="rm">삭제</button></div></div></div>`).join('');
+  m.innerHTML=`<p class="note" style="margin:16px 0 8px;text-align:center">내 잔고 12원의 ${Math.round(cart.total()/12).toLocaleString()}배예요. 현실이었다면 큰일 날 뻔했어요.</p><a class="btn sec" style="width:100%" href="/search.html">더 담으러 가기</a>`;
+  document.getElementById('go').innerHTML=`<a class="btn" href="/checkout.html">주문하기 (${cart.count()})</a>`;
 }
 document.getElementById('list').onclick=e=>{const {id,d}=e.target.dataset;if(!id)return;const x=cart.get().find(i=>i.id===id);cart.set(id,d==='rm'?0:x.qty+Number(d));draw()};
 draw();
